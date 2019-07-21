@@ -1,6 +1,6 @@
-# flutter_app
+# timetable
 
-A new Flutter application.
+Расписание СибГУ
 
 ## Getting Started
 

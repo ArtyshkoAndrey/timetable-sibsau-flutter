@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import './classes/app_config.dart';
 
 class LoginApp extends StatelessWidget {
   @override
@@ -26,6 +27,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  AppConfig _ac;
   TextStyle style = TextStyle(fontSize: 20.0);
   final TextEditingController _controller = new TextEditingController();
   List items = List();
@@ -52,6 +54,20 @@ class _LoginPageState extends State<LoginPage> {
           items.clear();
           loading = true;
         });
+//        List tempItems = List();
+//        tempItems.add(
+//          {'name': "БПА17-01", 'id': 770}
+//        );
+//        tempItems.add(
+//            {'name': "БПА16-01", 'id': 760}
+//        );
+//        tempItems.add(
+//            {'name': "БПА15-01", 'id': 750}
+//        );
+//        setState(() {
+//          loading = false;
+//          items = tempItems;
+//        });
       }
     } else {
       setState(() {
@@ -70,53 +86,84 @@ class _LoginPageState extends State<LoginPage> {
   searchList() {
     if (!loading) {
       if (searchText == '') {
-        return Card(child: ListTile(title: Text('Введит название групы'), dense: true));
+        return Container(
+          margin: EdgeInsets.only(bottom: _ac.rHP(23)),
+          child: Card(child: ListTile(title: Text('Введит название групы'), dense: true))
+        );
       }
       if (items.length > 0) {
-        return ListView.builder(
-          shrinkWrap: true,
-          itemCount: items.length,
-          itemBuilder: (context, index) {
-            return new InkWell(
-                onTap: (){ saveGroupAndRedirect(items[index]); },
-                child: Card(
-                    child: ListTile(title: Text('${items[index]['name']}'), dense: true)
-                )
-            );
-          },
+        return Container(
+          height: _ac.rHP(30),
+          child: ListView.builder(
+            shrinkWrap: true,
+            padding: EdgeInsets.only(top: 0),
+            itemCount: items.length,
+            itemBuilder: (context, index) {
+              return new InkWell(
+                  onTap: (){ saveGroupAndRedirect(items[index]); },
+                  child: Card(
+                      child: ListTile(title: Text('${items[index]['name']}'), dense: true)
+                  )
+              );
+            },
+          )
         );
       } else {
-        return Card(child: ListTile(title: Text('Нет совпадений'), dense: true));
+        return Container(
+            margin: EdgeInsets.only(bottom: _ac.rHP(23)),
+            child: Card(child: ListTile(title: Text('Нет совпадений'), dense: true))
+        );
       }
     } else {
       return Container(
-        margin: EdgeInsets.only(top: 20),
+        height: _ac.rHP(28),
+        margin: EdgeInsets.only(top: _ac.rHP(2)),
         child: SpinKitDoubleBounce(
           color: Colors.white,
-          size: 50.0,
+          size: _ac.rHP(5),
         )
       );
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
-    final groupField = TextField(
-      obscureText: false,
-      style: style,
-      controller: _controller,
-      autofocus: true,
-      onChanged: (value) {
-        searchResults(value);
-      },
-      decoration: InputDecoration(
-        hintText: "Группа",
-        border: OutlineInputBorder(),
-        filled: true,
-        fillColor: Colors.white,
-      ),
+    _ac = AppConfig(context);
+
+    final groupField = Container(
+//      height: 60,
+      padding: EdgeInsets.symmetric(horizontal: 3),
+      child: TextField(
+        style: style,
+        controller: _controller,
+        autofocus: true,
+        onChanged: (value) {
+          searchResults(value);
+        },
+        decoration: InputDecoration(
+          contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+          hintText: "Группа",
+          border: OutlineInputBorder(),
+          filled: true,
+          fillColor: Colors.white,
+        ),
+      )
     );
+
+    logo(BoxConstraints _constraints) {
+
+      if (_constraints.maxHeight > 500) {
+        return SizedBox(
+          height: _ac.rHP(15),
+          child: Image.asset(
+            "assets/images/logo.png",
+            fit: BoxFit.contain,
+          ),
+        );
+      } else {
+        return Container();
+      }
+    }
 
     return Scaffold(
       body: Container(
@@ -126,33 +173,30 @@ class _LoginPageState extends State<LoginPage> {
               fit: BoxFit.cover,
             ),
           ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 35.0, vertical: 50),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: <Widget>[
-                Column(
+          child: new LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 35.0, vertical: 20),
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    SizedBox(
-                      height: 100.0,
-                      child: Image.asset(
-                        "assets/images/logo.png",
-                        fit: BoxFit.contain,
-                      ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        logo(constraints),
+                        SizedBox(
+                          height: _ac.rHP(5),
+                        ),
+                        groupField
+                      ],
                     ),
-                    SizedBox(
-                      height: 30.0,
-                    ),
-                    groupField
+                    searchList()
                   ],
                 ),
-                searchList()
-              ],
-            ),
-          ),
+              );
+            })
         ),
       );
   }
