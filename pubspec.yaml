@@ -1,5 +1,5 @@
 name: timetable
-description: Расписание СибГУ
+description: СибГУ
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -11,7 +11,7 @@ description: Расписание СибГУ
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.1+4
+version: 1.0.1+7
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
@@ -33,7 +33,7 @@ dependencies:
   http:
   firebase_messaging: ^4.0.0+1
   firebase_core: ^0.2.5
-  firebase_analytics: ^1.0.4
+  firebase_analytics:
 
 dev_dependencies:
   flutter_test:

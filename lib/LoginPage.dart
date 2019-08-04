@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import './classes/app_config.dart';
+import './main.dart';
 
 class LoginApp extends StatelessWidget {
   @override
@@ -20,8 +21,9 @@ class LoginApp extends StatelessWidget {
 }
 
 class LoginPage extends StatefulWidget {
-  LoginPage({Key key, this.title}) : super(key: key);
   final String title;
+  LoginPage({Key key, this.title}) : super(key: key);
+
   @override
   _LoginPageState createState() => _LoginPageState();
 }
@@ -42,7 +44,7 @@ class _LoginPageState extends State<LoginPage> {
       });
       try {
         final response = await http.get(
-            'http://95.188.80.41/api/group/search/$query/3');
+            uriServer + 'api/group/search/$query/3');
         setState(() {
           items.clear();
           items.addAll(json.decode(response.body)['groups'] as List);
@@ -54,20 +56,6 @@ class _LoginPageState extends State<LoginPage> {
           items.clear();
           loading = true;
         });
-//        List tempItems = List();
-//        tempItems.add(
-//          {'name': "БПА17-01", 'id': 770}
-//        );
-//        tempItems.add(
-//            {'name': "БПА16-01", 'id': 760}
-//        );
-//        tempItems.add(
-//            {'name': "БПА15-01", 'id': 750}
-//        );
-//        setState(() {
-//          loading = false;
-//          items = tempItems;
-//        });
       }
     } else {
       setState(() {
@@ -79,8 +67,14 @@ class _LoginPageState extends State<LoginPage> {
   saveGroupAndRedirect(Object group) async {
     var prefs = await SharedPreferences.getInstance();
     prefs.setString('group', json.encode(group));
-    print(json.encode(group));
-    Navigator.pushReplacementNamed(context, '/timetable');
+//    Navigator.pushReplacementNamed(context, '/timetable');
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MyTabs(),
+        settings: RouteSettings(name: '/timetable'),
+      ),
+    );
   }
 
   searchList() {

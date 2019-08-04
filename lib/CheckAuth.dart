@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
+import './LoginPage.dart';
+import './main.dart';
 
 class CheckAuth extends StatefulWidget {
   @override
@@ -19,9 +20,23 @@ class _CheckAuthState extends State<CheckAuth> {
     var prefs = await SharedPreferences.getInstance();
     var group = prefs.get('group');
     if (group == null) {
-      Navigator.pushReplacementNamed(context, '/login');
+//      Navigator.pushReplacementNamed(context, '/login');
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => LoginPage(title: 'Вход'),
+          settings: RouteSettings(name: '/login'),
+        ),
+      );
     } else {
-      Navigator.pushReplacementNamed(context, '/timetable');
+//      Navigator.pushReplacementNamed(context, '/timetable');
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MyTabs(),
+          settings: RouteSettings(name: '/timetable'),
+        ),
+      );
     }
   }
 

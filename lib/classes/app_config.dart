@@ -29,3 +29,5 @@ class AppConfig {
     return _widthPadding * v;
   }
 }
+
+final String uriServer = 'http://192.168.1.16/';

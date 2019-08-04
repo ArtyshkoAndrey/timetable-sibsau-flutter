@@ -6,11 +6,20 @@ import './LoginPage.dart';
 import './CheckAuth.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_analytics/observer.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 void main() {
+  FirebaseAnalytics analytics = FirebaseAnalytics();
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+  _firebaseMessaging
+      .subscribeToTopic('allDevice');
   runApp(new MaterialApp(
-//    home: new MyTabs(),
       initialRoute: '/',
+      navigatorObservers: [
+        FirebaseAnalyticsObserver(analytics: analytics),
+      ],
       routes: {
         '/': (context) => CheckAuth(),
         '/login': (context) => LoginPage(title: 'Вход'),
@@ -21,20 +30,19 @@ void main() {
 
 class MyTabs extends StatefulWidget{
   @override
-  MyTabsState createState() => new MyTabsState();
+  MyTabsState createState() => MyTabsState();
 }
 
-class MyTabsState extends State<MyTabs> with SingleTickerProviderStateMixin{
+class MyTabsState extends State<MyTabs> with SingleTickerProviderStateMixin {
 
   TabController controller;
-  var group;
+  Map group = {'name':'Loading'};
 
   @override
   void initState(){
     super.initState();
     controller = new TabController(vsync: this, length: 2);
     SharedPreferences.getInstance().then((prefs) {
-      print(json.decode(prefs.get('group')));
       setState(() {
         group = json.decode(prefs.get('group'));
       });
@@ -48,11 +56,22 @@ class MyTabsState extends State<MyTabs> with SingleTickerProviderStateMixin{
   }
 
   void _select(Choice choice) async {
+    pr1();
     if (choice.title == 'Выйти') {
       var prefs = await SharedPreferences.getInstance();
       prefs.remove('group');
-      Navigator.pushReplacementNamed(context, '/login');
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CheckAuth(),
+          settings: RouteSettings(name: '/'),
+        ),
+      );
     }
+  }
+
+  void pr1 () {
+    print(123);
   }
 
   @override
@@ -76,12 +95,10 @@ class MyTabsState extends State<MyTabs> with SingleTickerProviderStateMixin{
           ],
         ),
         bottomNavigationBar: new SizedBox(
-//          height: 58,
           width: MediaQuery.of(context).size.width,
           child: new Material(
             color: Colors.white,
             child: new TabBar(
-//              labelStyle: TextStyle(fontSize: 12.0),
               controller: controller,
               indicatorColor: Color(0xFF006CB5),
               labelColor: Color(0xFF006CB5),
@@ -98,7 +115,7 @@ class MyTabsState extends State<MyTabs> with SingleTickerProviderStateMixin{
             physics: const NeverScrollableScrollPhysics(),
             controller: controller,
             children: <Widget>[
-              new TimetablePage(),
+              new TimetablePage(group: group),
               new NewsPage(),
             ]
         )
