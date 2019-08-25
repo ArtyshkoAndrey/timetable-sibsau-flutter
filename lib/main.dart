@@ -79,6 +79,7 @@ class MyTabsState extends State<MyTabs> with SingleTickerProviderStateMixin {
     return new Scaffold(
         appBar: new AppBar(
           title: new Text("Расписание ${group['name']}"),
+          elevation: 0.0,
           backgroundColor: Color(0xFF006CB5),
           actions: <Widget> [
             PopupMenuButton<Choice>(

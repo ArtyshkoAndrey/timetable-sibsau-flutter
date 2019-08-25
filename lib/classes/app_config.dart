@@ -30,4 +30,4 @@ class AppConfig {
   }
 }
 
-final String uriServer = 'http://192.168.1.16/';
+final String uriServer = 'https://timetable.artyshko.ru/';
