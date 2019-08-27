@@ -181,7 +181,7 @@ class _LoginPageState extends State<LoginPage> {
                       children: <Widget>[
                         logo(constraints),
                         SizedBox(
-                          height: _ac.rHP(5),
+                          height: _ac.rHP(2),
                         ),
                         groupField
                       ],

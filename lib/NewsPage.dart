@@ -94,39 +94,4 @@ class _NewsPageState extends State<NewsPage> {
         }
     );
   }
-//    return Column(
-//      mainAxisSize: MainAxisSize.min,
-//      children: <Widget>[
-//        Card(
-//          child: Container(
-//            margin: EdgeInsets.only(top: 15),
-//            child: Column(
-//              mainAxisSize: MainAxisSize.min,
-//              children: <Widget>[
-//                ListTile(
-//                  leading: Image(image: AssetImage("assets/images/logo.png")),
-//                  title: Text(news['title']),
-//                  subtitle: Text(news['subtitle']),
-//                ),
-//                ButtonTheme.bar( // make buttons use the appropriate styles for cards
-//                  child: ButtonBar(
-//                    children: <Widget>[
-//                      FlatButton(
-//                        child: const Text('Подробнее'),
-//                        onPressed: () {
-//                          Navigator.push(
-//                            context,
-//                            MaterialPageRoute(builder: (context) =>  DetailsPage(news: news)),
-//                          );
-//                        },
-//                      ),
-//                    ],
-//                  ),
-//                ),
-//              ],
-//            ),
-//          ),
-//        ),
-//    ]);
-//  }
 }

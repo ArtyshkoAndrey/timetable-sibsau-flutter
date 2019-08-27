@@ -9,12 +9,22 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_analytics/observer.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import './EventsPage.dart';
+import './SettingsPage.dart';
+import './MapsPage.dart';
 
 void main() {
   FirebaseAnalytics analytics = FirebaseAnalytics();
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
-  _firebaseMessaging
-      .subscribeToTopic('allDevice');
+  var notified;
+  SharedPreferences.getInstance().then((prefs) {
+    notified = prefs.getBool('notifications');
+    print(notified);
+    if (notified == null) {
+      prefs.setBool('notifications', true);
+      _firebaseMessaging.subscribeToTopic('allDevice');
+    }
+  });
   runApp(new MaterialApp(
       initialRoute: '/',
       navigatorObservers: [
@@ -56,7 +66,6 @@ class MyTabsState extends State<MyTabs> with SingleTickerProviderStateMixin {
   }
 
   void _select(Choice choice) async {
-    pr1();
     if (choice.title == 'Выйти') {
       var prefs = await SharedPreferences.getInstance();
       prefs.remove('group');
@@ -70,13 +79,55 @@ class MyTabsState extends State<MyTabs> with SingleTickerProviderStateMixin {
     }
   }
 
-  void pr1 () {
-    print(123);
-  }
-
   @override
   Widget build(BuildContext context){
     return new Scaffold(
+        drawer: new Drawer(
+          child: ListView(
+            children: <Widget>[
+              new UserAccountsDrawerHeader(
+                accountName: new Text(group['name']),
+                currentAccountPicture: new GestureDetector(
+                  child: new CircleAvatar(
+                    backgroundImage: new AssetImage('assets/images/logo.png'),
+                    backgroundColor: Colors.white,
+                  )
+                ),
+                accountEmail: new Text('СибГУ им. Решетнева'),
+                decoration: new BoxDecoration(
+                  image: new DecorationImage(
+                    image: new AssetImage('assets/images/background.png'),
+                    fit: BoxFit.cover
+                  )
+                )
+              ),
+              ListTile(
+                title: Text("Мероприятия"),
+                trailing: Icon(Icons.arrow_forward),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).push(new MaterialPageRoute(builder: (BuildContext context) => new EventsPage()));
+                },
+              ),
+              ListTile(
+                title: Text("Настройки"),
+                trailing: Icon(Icons.arrow_forward),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).push(new MaterialPageRoute(builder: (BuildContext context) => new SettingsPage()));
+                },
+              ),
+              ListTile(
+                title: Text("Карта кампуса"),
+                trailing: Icon(Icons.arrow_forward),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).push(new MaterialPageRoute(builder: (BuildContext context) => new MapsPage()));
+                },
+              ),
+            ],
+          ),
+        ),
         appBar: new AppBar(
           title: new Text("Расписание ${group['name']}"),
           elevation: 0.0,

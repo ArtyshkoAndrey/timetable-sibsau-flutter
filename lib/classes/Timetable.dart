@@ -79,8 +79,6 @@ class Lesson {
           nextLesson: null
       );
     } else {
-//      print(json.map((lesson) => Lesson.fromJson(lesson as Map)));
-//      return json.map<Lesson>((lesson) => Lesson.fromJson(lesson as Map)).toList();
       return Lesson(
           id: json[0]['id'] as int,
           name: json[0]['name'][0].toUpperCase() + json[0]['name'].substring(1).toLowerCase(),
@@ -106,7 +104,6 @@ class Day {
   Day({this.lessons, this.index, this.name});
 
   factory Day.fromJson(Map json) {
-    print(json['index']);
     return Day(
       lessons: json['lessons'].map<Lesson>((lesson) => Lesson.fromJson(lesson)).toList(),
       index: json['index'],
