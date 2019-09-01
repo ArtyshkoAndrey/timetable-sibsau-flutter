@@ -4,18 +4,18 @@ import './classes/Timetable.dart';
 import 'package:http/http.dart' as http;
 import './classes/app_config.dart';
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_advanced_networkimage/provider.dart';
 
 class NewsPage extends StatefulWidget {
   @override
   _NewsPageState createState() => _NewsPageState();
 }
 class _NewsPageState extends State<NewsPage> {
-  var news = {
-    'title': 'Глобальное обновление',
-    'subtitle': 'Добро пожаловать в новое приложение СибГУ. Всегда актуальное расписание в кармане.',
-    'content': 'Дорогие друзья! \n Я рад приветствовать вас на официальном сайте Сибирского государственного университета науки и технологий имени академика М.Ф. Решетнева! СибГУ им. М.Ф.Решетнева — первый опорный университет Восточной Сибири, осуществляющий подготовку высококвалифицированных специалистов по более чем 100 программам для авиационной и космической промышленности, машиностроения, лесной, деревообрабатывающей и химической отрасли, научных и финансовых организаций, международных и российских бизнес-структур, масс-медиа. \n СибГУ им. М.Ф.Решетнева — это целый мир возможностей, который предлагает университет сегодня. Уверен, что наш вуз станет для вас верным путеводителем в будущее \n Добро пожаловать в СибГУ им. М.Ф. Решетнева! \n Акбулатов Эдхам Шукриевич'
-  };
+
   Future _hendlerPostFuture;
+  Future<SharedPreferences> pref = SharedPreferences.getInstance();
+  bool internet = true;
 
   @override
   initState() {
@@ -24,13 +24,23 @@ class _NewsPageState extends State<NewsPage> {
   }
 
   Future<List<Post>> getPost() async {
-    var response = await http.get(uriServer + '/api/posts');
-    if (response.statusCode == 200) {
-      var parsed = await json.decode(response.body).cast<Map<String, dynamic>>();
-      return parsed.map<Post>((json) => Post.fromJson(json)).toList();
-    } else {
-      throw Exception('Failed to load post');
+    final SharedPreferences prefs = await pref;
+    try {
+      var response = await http.get(uriServer + '/api/posts');
+      if (response.statusCode == 200) {
+        var parsed = await json.decode(response.body).cast<Map<String, dynamic>>();
+        var posts = parsed.map<Post>((json) => Post.fromJson(json)).toList();
+        await prefs.setString('news', response.body);
+        return posts;
+      }
+    } catch(e) {
+      setState(() {
+        internet = false;
+      });
+      var parsed = json.decode(prefs.getString('news')).cast<Map<String, dynamic>>();
+      return parsed.map<Post>((value) => Post.fromJson(value)).toList();
     }
+    throw Exception('Failed to load post');
   }
 
   @override
@@ -63,7 +73,9 @@ class _NewsPageState extends State<NewsPage> {
                               mainAxisSize: MainAxisSize.min,
                               children: <Widget>[
                                 ListTile(
-                                  leading: Image(image: AssetImage("assets/images/logo.png")),
+                                  leading: Image( image: AdvancedNetworkImage('http://s.gravatar.com/avatar/f31e533e6ab7a1edff0fa46e5c3b089d.png', useDiskCache: true),
+                                    fit: BoxFit.cover,
+                                  ),
                                   title: Text(post.title),
                                   subtitle: Text(post.summary),
                                 ),

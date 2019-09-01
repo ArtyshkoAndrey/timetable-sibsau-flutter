@@ -38,14 +38,13 @@ class _DetailsPageState extends State<DetailsPage> {
 
     Widget image () {
       if (widget.news.img != null) {
-        print('https://timetable.artyshko.ru/public/uploads'+widget.news.img);
         return Container(
             padding: EdgeInsets.only(left: 10.0),
             height: MediaQuery.of(context).size.height * 0.4,
             decoration: new BoxDecoration(
                 image: DecorationImage(
                   image: NetworkImage('https://timetable.artyshko.ru/public/uploads${widget.news.img}'),
-                    fit: BoxFit.fill
+                    fit: BoxFit.cover
                 )
             ));
       } else {
@@ -55,7 +54,7 @@ class _DetailsPageState extends State<DetailsPage> {
             decoration: new BoxDecoration(
                 image: DecorationImage(
                   image: AssetImage('assets/images/background.png'),
-                  fit: BoxFit.fill
+                    fit: BoxFit.cover
                 )
             ));
       }

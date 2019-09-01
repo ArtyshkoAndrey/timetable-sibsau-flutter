@@ -144,4 +144,32 @@ class Post {
       img: json['avatar']
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      "id": this.id,
+      "title": this.title,
+      'summary': this.summary,
+      'body': this.body,
+      'avatar': this.avatar,
+      'img': this.img
+    };
+  }
+}
+
+class Event {
+  final int id;
+  final String title;
+  final int numDay;
+  final String date;
+
+  Event({this.id, this.title, this.numDay, this.date});
+  factory Event.fromJson(Map<String, dynamic> json) {
+    return Event(
+        id: json['id'] as int,
+        title: json['title'],
+        numDay: json['num_day'],
+        date: json['date']
+    );
+  }
 }

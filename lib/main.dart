@@ -19,7 +19,6 @@ void main() {
   var notified;
   SharedPreferences.getInstance().then((prefs) {
     notified = prefs.getBool('notifications');
-    print(notified);
     if (notified == null) {
       prefs.setBool('notifications', true);
       _firebaseMessaging.subscribeToTopic('allDevice');
@@ -44,7 +43,7 @@ class MyTabs extends StatefulWidget{
 }
 
 class MyTabsState extends State<MyTabs> with SingleTickerProviderStateMixin {
-
+  final FirebaseMessaging _fcm = FirebaseMessaging();
   TabController controller;
   Map group = {'name':'Loading'};
 
@@ -57,6 +56,34 @@ class MyTabsState extends State<MyTabs> with SingleTickerProviderStateMixin {
         group = json.decode(prefs.get('group'));
       });
     });
+    _fcm.configure(
+      onMessage: (Map<String, dynamic> message) async {
+        print("onMessage: $message");
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            content: ListTile(
+              title: Text(message['notification']['title']),
+              subtitle: Text(message['notification']['body']),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('Ok'),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ],
+          ),
+        );
+      },
+      onLaunch: (Map<String, dynamic> message) async {
+        print("onLaunch: $message");
+        // TODO optional
+      },
+      onResume: (Map<String, dynamic> message) async {
+        print("onResume: $message");
+        // TODO optional
+      },
+    );
   }
 
   @override

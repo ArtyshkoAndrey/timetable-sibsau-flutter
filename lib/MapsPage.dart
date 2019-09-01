@@ -12,20 +12,91 @@ class MapsPage extends StatefulWidget {
 class _MapsPageState extends State<MapsPage> {
   Completer<GoogleMapController> _controller = Completer();
   MapType _currentMapType = MapType.normal;
+  final Map<String, Marker> _markers = {};
   static final CameraPosition _kGooglePlex = CameraPosition(
-    target: LatLng(37.42796133580664, -122.085749655962),
-    zoom: 14.4746,
+    target: LatLng(56.012796, 92.869015),
+    zoom: 16,
   );
 
-  static final CameraPosition _kLake = CameraPosition(
-      bearing: 192.8334901395799,
-      target: LatLng(37.43296265331129, -122.08832357078792),
-      tilt: 59.440717697143555,
-      zoom: 19.151926040649414);
+  static final CameraPosition _kLeft = CameraPosition(
+      target: LatLng(56.012796, 92.869015),
+      zoom: 16);
+
+  static final CameraPosition _kRight = CameraPosition(
+      target: LatLng(56.012153, 92.974597),
+      zoom: 16);
+
+  @override
+  void initState() {
+    _markers['A'] = Marker(
+        markerId: MarkerId('A'),
+        position: LatLng(56.0127544,92.9736427),
+        infoWindow: InfoWindow(
+          title: 'Корпус «А»',
+          snippet: 'пр. им. газеты «Красноярский рабочий», 31',
+
+        )
+    );
+    _markers['V'] = Marker(
+        markerId: MarkerId('V'),
+        position: LatLng(56.0154511,92.9861462),
+        infoWindow: InfoWindow(
+          title: 'Корпус «В»',
+          snippet: 'пр. им. газеты «Красноярский рабочий», 29',
+
+        )
+    );
+    _markers['L'] = Marker(
+        markerId: MarkerId('L'),
+        position: LatLng(56.012970, 92.973901),
+        infoWindow: InfoWindow(
+          title: 'Корпус «Л»',
+          snippet: 'пр. им. газеты Красноярский рабочий, 31',
+
+        )
+    );
+    _markers['L'] = Marker(
+        markerId: MarkerId('L'),
+        position: LatLng(56.0123588,92.8676686),
+        infoWindow: InfoWindow(
+          title: 'Корпус «Гл»',
+          snippet: 'пр. Мира, 82',
+
+        )
+    );
+    _markers['Bl'] = Marker(
+        markerId: MarkerId('Bl'),
+        position: LatLng(56.0147639,92.867594),
+        infoWindow: InfoWindow(
+          title: 'Корпус «Бл»',
+          snippet: 'ул. Марковского, 57',
+
+        )
+    );
+    _markers['Yu'] = Marker(
+        markerId: MarkerId('Yu'),
+        position: LatLng(56.0174608,92.9802543),
+        infoWindow: InfoWindow(
+          title: 'Корпус «Ю»',
+          snippet: 'ул. Юности, 18а',
+
+        )
+    );
+    // TODO: implement initState
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
+      appBar:  AppBar(
+        iconTheme: IconThemeData(
+          color: Colors.black, //change your color here
+        ),
+        title: Text('Карта кампуса', style: TextStyle( color: Colors.black)),
+        backgroundColor: Colors.white, //No more green
+        elevation: 0.0, //Shadow gone
+      ),
       body: Stack(
         children: <Widget>[
           GoogleMap(
@@ -35,19 +106,7 @@ class _MapsPageState extends State<MapsPage> {
             onMapCreated: (GoogleMapController controller) {
               _controller.complete(controller);
             },
-          ),
-          new Positioned( //Place it at the top, and not use the entire screen
-            top: 0.0,
-            left: 0.0,
-            right: 0.0,
-            child: AppBar(
-              iconTheme: IconThemeData(
-                color: Colors.black, //change your color here
-              ),
-              title: Text('Карта кампуса', style: TextStyle( color: Colors.black),),
-              backgroundColor: Colors.transparent, //No more green
-              elevation: 0.0, //Shadow gone
-            ),
+            markers: _markers.values.toSet(),
           ),
         ],
       ),
@@ -65,9 +124,16 @@ class _MapsPageState extends State<MapsPage> {
           ),
           Container(
             child: FloatingActionButton.extended(
-              onPressed: _goToTheLake,
-              label: Text('Где Я?'),
-              icon: Icon(Icons.location_searching),
+              onPressed: _goToTheLeft,
+              label: Text('Корпусы на левом'),
+              heroTag: null,
+            ),
+            padding: EdgeInsets.symmetric(vertical: 5),
+          ),
+          Container(
+            child: FloatingActionButton.extended(
+              onPressed: _goToTheRight,
+              label: Text('Корпусы на правом'),
               heroTag: null,
             ),
             padding: EdgeInsets.symmetric(vertical: 5),
@@ -77,9 +143,14 @@ class _MapsPageState extends State<MapsPage> {
     );
   }
 
-  Future<void> _goToTheLake() async {
+  Future<void> _goToTheLeft() async {
     final GoogleMapController controller = await _controller.future;
-    controller.animateCamera(CameraUpdate.newCameraPosition(_kLake));
+    controller.animateCamera(CameraUpdate.newCameraPosition(_kLeft));
+  }
+
+  Future<void> _goToTheRight() async {
+    final GoogleMapController controller = await _controller.future;
+    controller.animateCamera(CameraUpdate.newCameraPosition(_kRight));
   }
 
   void _onMapTypeButtonPressed() {

@@ -51,7 +51,6 @@ class _LoginPageState extends State<LoginPage> {
           loading = false;
         });
       } catch (e) {
-        print('Error Network');
         setState(() {
           items.clear();
           loading = true;
@@ -82,7 +81,7 @@ class _LoginPageState extends State<LoginPage> {
       if (searchText == '') {
         return Container(
           margin: EdgeInsets.only(bottom: _ac.rHP(23)),
-          child: Card(child: ListTile(title: Text('Введит название групы'), dense: true))
+          child: Card(child: ListTile(title: Text('Введите название группы'), dense: true))
         );
       }
       if (items.length > 0) {

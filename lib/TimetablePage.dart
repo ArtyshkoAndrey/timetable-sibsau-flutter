@@ -11,7 +11,6 @@ import './classes/app_config.dart';
 
 class TimetablePage extends StatefulWidget {
   final Map group;
-
   TimetablePage({Key key, this.group}) : super(key: key);
 
   @override
@@ -20,11 +19,11 @@ class TimetablePage extends StatefulWidget {
 
 class _TimetablePageState extends State<TimetablePage>
     with SingleTickerProviderStateMixin {
+  Future<SharedPreferences> pref = SharedPreferences.getInstance();
   int _current = 0;
   Future _future;
   AppConfig _ac;
   TabController _tabController;
-  SharedPreferences prefs;
   DateTime date;
   int dayOfYear;
   int numW;
@@ -59,29 +58,35 @@ class _TimetablePageState extends State<TimetablePage>
   }
 
   Future<List> getLessons() async {
-    print('Группа ${widget.group['id']}');
+    final SharedPreferences prefs = await pref;
     if (widget.group['id'] == null) {
       await Future.delayed(Duration(seconds: 1));
     }
     if (widget.group['id'] != null) {
-      print(uriServer + '/api/group/${widget.group['id']}');
-      var response =
-          await http.get(uriServer + '/api/group/${widget.group['id']}');
-      if (response.statusCode == 200) {
-        var parsed = await json.decode(response.body)['timetable'];
+      try {
+        var response =
+        await http.get(uriServer + '/api/group/${widget.group['id']}');
+        if (response.statusCode == 200) {
+          var parsed = await json.decode(response.body)['timetable'];
+          await prefs.setString('timetable', response.body);
+          var list = List();
+          list.add(parsed[0]); // Массив дней 1 недели
+          list.add(parsed[1]);
+          list[0] = await list[0].map<Day>((day) => Day.fromJson(day)).toList();
+          list[1] = await list[1].map<Day>((day) => Day.fromJson(day)).toList();
+          return list;
+        }
+      } catch (e) {
+        var parsed = await json.decode(prefs.getString('timetable'))['timetable'];
         var list = List();
         list.add(parsed[0]); // Массив дней 1 недели
         list.add(parsed[1]);
         list[0] = await list[0].map<Day>((day) => Day.fromJson(day)).toList();
         list[1] = await list[1].map<Day>((day) => Day.fromJson(day)).toList();
-        print(list);
         return list;
-      } else {
-        print(123);
-        throw Exception('Failed to load post');
       }
+      throw Exception('Failed to load post');
     } else {
-      print(123);
       throw Exception('Failed to load post');
     }
   }
@@ -302,7 +307,6 @@ class _TimetablePageState extends State<TimetablePage>
                                 fontWeight: FontWeight.bold, fontSize: 14.0)));
                   } else {
                     List<Day> days = snapshot.data[numWeek];
-                    print(days.length);
                     if (days.length == 0) {
                       return Center(
                           child: Text('Нет лент...',

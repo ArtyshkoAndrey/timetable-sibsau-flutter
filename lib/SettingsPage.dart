@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import './Settings/DevelopPage.dart';
 
 class SettingsPage extends StatefulWidget {
   @override
@@ -15,7 +16,6 @@ class _SettingsPageState extends State<SettingsPage> {
     super.initState();
     SharedPreferences.getInstance().then((prefs) {
       var notified = prefs.getBool('notifications');
-      print(notified);
       if (notified == null) {
         prefs.setBool('notifications', true);
         notified = true;
@@ -45,7 +45,6 @@ class _SettingsPageState extends State<SettingsPage> {
             title: Text('Уведомления'),
             subtitle: Text('Расписания, обновления и тд.'),
             onChanged: (value) {
-              print(value);
               if (value) {
                 _firebaseMessaging.subscribeToTopic('allDevice');
               } else {
@@ -62,7 +61,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ListTile(
             title: Text('Для разработчика'),
             subtitle: Text('Настройки разработчика'),
-            onTap: (){},
+            onTap: (){Navigator.of(context).push(new MaterialPageRoute(builder: (BuildContext context) => new DevelopPage()));},
           )
         ]),
     );
