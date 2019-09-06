@@ -11,7 +11,7 @@ description: Мой СибГУ
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.5+44
+version: 1.0.5+50
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
@@ -35,6 +35,8 @@ dependencies:
   async:
   intl: ^0.15.8
   flutter_advanced_networkimage: ^0.5.0
+  flutter_html: ^0.10.4
+  url_launcher:
 
 dev_dependencies:
   flutter_test:

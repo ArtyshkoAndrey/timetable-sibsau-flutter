@@ -37,8 +37,7 @@ class _DevelopPageState extends State<DevelopPage> {
       appBar: new AppBar(
           title: new Text("Для разработчика"),
           elevation: 0.0,
-          backgroundColor: Color(0xFF006CB5)
-      ),
+          backgroundColor: Color(0xFF006CB5)),
       body: ListView(children: <Widget>[
         new SwitchListTile(
           value: notification,
@@ -48,7 +47,8 @@ class _DevelopPageState extends State<DevelopPage> {
             if (value) {
               _firebaseMessaging.subscribeToTopic('notificationsDevelopTest');
             } else {
-              _firebaseMessaging.unsubscribeFromTopic('notificationsDevelopTest');
+              _firebaseMessaging
+                  .unsubscribeFromTopic('notificationsDevelopTest');
             }
             SharedPreferences.getInstance().then((prefs) {
               prefs.setBool('notifications', value);
@@ -61,5 +61,4 @@ class _DevelopPageState extends State<DevelopPage> {
       ]),
     );
   }
-
 }

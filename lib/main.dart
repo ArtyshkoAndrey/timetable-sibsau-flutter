@@ -24,20 +24,16 @@ void main() {
       _firebaseMessaging.subscribeToTopic('allDevice');
     }
   });
-  runApp(new MaterialApp(
-      initialRoute: '/',
-      navigatorObservers: [
-        FirebaseAnalyticsObserver(analytics: analytics),
-      ],
-      routes: {
-        '/': (context) => CheckAuth(),
-        '/login': (context) => LoginPage(title: 'Вход'),
-        '/timetable': (context) => MyTabs()
-      }
-  ));
+  runApp(new MaterialApp(initialRoute: '/', navigatorObservers: [
+    FirebaseAnalyticsObserver(analytics: analytics),
+  ], routes: {
+    '/': (context) => CheckAuth(),
+    '/login': (context) => LoginPage(title: 'Вход'),
+    '/timetable': (context) => MyTabs()
+  }));
 }
 
-class MyTabs extends StatefulWidget{
+class MyTabs extends StatefulWidget {
   @override
   MyTabsState createState() => MyTabsState();
 }
@@ -45,10 +41,10 @@ class MyTabs extends StatefulWidget{
 class MyTabsState extends State<MyTabs> with SingleTickerProviderStateMixin {
   final FirebaseMessaging _fcm = FirebaseMessaging();
   TabController controller;
-  Map group = {'name':'Loading'};
+  Map group = {'name': 'Loading'};
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     controller = new TabController(vsync: this, length: 2);
     SharedPreferences.getInstance().then((prefs) {
@@ -87,7 +83,7 @@ class MyTabsState extends State<MyTabs> with SingleTickerProviderStateMixin {
   }
 
   @override
-  void dispose(){
+  void dispose() {
     controller.dispose();
     super.dispose();
   }
@@ -107,33 +103,30 @@ class MyTabsState extends State<MyTabs> with SingleTickerProviderStateMixin {
   }
 
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     return new Scaffold(
         drawer: new Drawer(
           child: ListView(
             children: <Widget>[
               new UserAccountsDrawerHeader(
-                accountName: new Text(group['name']),
-                currentAccountPicture: new GestureDetector(
-                  child: new CircleAvatar(
+                  accountName: new Text(group['name']),
+                  currentAccountPicture: new GestureDetector(
+                      child: new CircleAvatar(
                     backgroundImage: new AssetImage('assets/images/logo.png'),
                     backgroundColor: Colors.white,
-                  )
-                ),
-                accountEmail: new Text('СибГУ им. Решетнева'),
-                decoration: new BoxDecoration(
-                  image: new DecorationImage(
-                    image: new AssetImage('assets/images/background.png'),
-                    fit: BoxFit.cover
-                  )
-                )
-              ),
+                  )),
+                  accountEmail: new Text('СибГУ им. Решетнева'),
+                  decoration: new BoxDecoration(
+                      image: new DecorationImage(
+                          image: new AssetImage('assets/images/background.png'),
+                          fit: BoxFit.cover))),
               ListTile(
                 title: Text("Мероприятия"),
                 trailing: Icon(Icons.arrow_forward),
                 onTap: () {
                   Navigator.of(context).pop();
-                  Navigator.of(context).push(new MaterialPageRoute(builder: (BuildContext context) => new EventsPage()));
+                  Navigator.of(context).push(new MaterialPageRoute(
+                      builder: (BuildContext context) => new EventsPage()));
                 },
               ),
               ListTile(
@@ -141,7 +134,8 @@ class MyTabsState extends State<MyTabs> with SingleTickerProviderStateMixin {
                 trailing: Icon(Icons.arrow_forward),
                 onTap: () {
                   Navigator.of(context).pop();
-                  Navigator.of(context).push(new MaterialPageRoute(builder: (BuildContext context) => new SettingsPage()));
+                  Navigator.of(context).push(new MaterialPageRoute(
+                      builder: (BuildContext context) => new SettingsPage()));
                 },
               ),
               ListTile(
@@ -149,7 +143,8 @@ class MyTabsState extends State<MyTabs> with SingleTickerProviderStateMixin {
                 trailing: Icon(Icons.arrow_forward),
                 onTap: () {
                   Navigator.of(context).pop();
-                  Navigator.of(context).push(new MaterialPageRoute(builder: (BuildContext context) => new MapsPage()));
+                  Navigator.of(context).push(new MaterialPageRoute(
+                      builder: (BuildContext context) => new MapsPage()));
                 },
               ),
             ],
@@ -159,7 +154,7 @@ class MyTabsState extends State<MyTabs> with SingleTickerProviderStateMixin {
           title: new Text("Расписание ${group['name']}"),
           elevation: 0.0,
           backgroundColor: Color(0xFF006CB5),
-          actions: <Widget> [
+          actions: <Widget>[
             PopupMenuButton<Choice>(
               onSelected: _select,
               itemBuilder: (BuildContext context) {
@@ -174,31 +169,26 @@ class MyTabsState extends State<MyTabs> with SingleTickerProviderStateMixin {
           ],
         ),
         bottomNavigationBar: new SizedBox(
-          width: MediaQuery.of(context).size.width,
-          child: new Material(
-            color: Colors.white,
-            child: new TabBar(
-              controller: controller,
-              indicatorColor: Color(0xFF006CB5),
-              labelColor: Color(0xFF006CB5),
-              unselectedLabelColor: Colors.lightBlue[100],
-              labelPadding: EdgeInsets.zero,
-              tabs: <Tab>[
-                new Tab(icon: new Icon(Icons.date_range)),
-                new Tab(icon: new Icon(Mdi.newspaper))
-              ]
-            )
-          )
-        ),
+            width: MediaQuery.of(context).size.width,
+            child: new Material(
+                color: Colors.white,
+                child: new TabBar(
+                    controller: controller,
+                    indicatorColor: Color(0xFF006CB5),
+                    labelColor: Color(0xFF006CB5),
+                    unselectedLabelColor: Colors.lightBlue[100],
+                    labelPadding: EdgeInsets.zero,
+                    tabs: <Tab>[
+                      new Tab(icon: new Icon(Icons.date_range)),
+                      new Tab(icon: new Icon(Mdi.newspaper))
+                    ]))),
         body: new TabBarView(
             physics: const NeverScrollableScrollPhysics(),
             controller: controller,
             children: <Widget>[
               new TimetablePage(group: group),
               new NewsPage(),
-            ]
-        )
-    );
+            ]));
   }
 }
 

@@ -16,7 +16,7 @@ class _CheckAuthState extends State<CheckAuth> {
     _getData();
   }
 
-  void _getData () async {
+  void _getData() async {
     var prefs = await SharedPreferences.getInstance();
     var group = prefs.get('group');
     if (group == null) {
@@ -43,7 +43,6 @@ class _CheckAuthState extends State<CheckAuth> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SpinKitThreeBounce(color: Color(0xFF006CB5), size: 50)
-    );
+        body: SpinKitThreeBounce(color: Color(0xFF006CB5), size: 50));
   }
 }

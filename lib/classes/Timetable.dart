@@ -1,17 +1,11 @@
 class Time {
   final String start;
   final String end;
-  
-  Time({
-    this.start,
-    this.end
-  });
-  
+
+  Time({this.start, this.end});
+
   factory Time.fromJson(json) {
-    return Time(
-      start: json['start'] as String,
-      end: json['end'] as String
-    );
+    return Time(start: json['start'] as String, end: json['end'] as String);
   }
 }
 
@@ -19,19 +13,12 @@ class Data {
   final int index;
   final String name;
 
-  Data({
-    this.index,
-    this.name
-  });
+  Data({this.index, this.name});
 
   factory Data.fromJson(json) {
-    return Data(
-        index: json['index'] as int,
-        name: json['name']
-    );
+    return Data(index: json['index'] as int, name: json['name']);
   }
 }
-
 
 class Lesson {
   final int id;
@@ -47,26 +34,26 @@ class Lesson {
   final Lesson nextLesson;
   final Data day;
 
-  Lesson({
-    this.id,
-    this.name,
-    this.time,
-    this.type,
-    this.week,
-    this.subgroup,
-    this.lessonImageId,
-    this.group,
-    this.teacher,
-    this.audience,
-    this.day,
-    this.nextLesson
-  });
+  Lesson(
+      {this.id,
+      this.name,
+      this.time,
+      this.type,
+      this.week,
+      this.subgroup,
+      this.lessonImageId,
+      this.group,
+      this.teacher,
+      this.audience,
+      this.day,
+      this.nextLesson});
 
   factory Lesson.fromJson(json) {
     if (json is Map) {
       return Lesson(
           id: json['id'] as int,
-          name: json['name'][0].toUpperCase() + json['name'].substring(1).toLowerCase(),
+          name: json['name'][0].toUpperCase() +
+              json['name'].substring(1).toLowerCase(),
           time: Time.fromJson(json['time'] as Map),
           type: json['type'],
           week: json['week'] as int,
@@ -76,12 +63,12 @@ class Lesson {
           teacher: json['teacher'],
           day: Data.fromJson(json['day'] as Map),
           audience: json['audience'],
-          nextLesson: null
-      );
+          nextLesson: null);
     } else {
       return Lesson(
           id: json[0]['id'] as int,
-          name: json[0]['name'][0].toUpperCase() + json[0]['name'].substring(1).toLowerCase(),
+          name: json[0]['name'][0].toUpperCase() +
+              json[0]['name'].substring(1).toLowerCase(),
           time: Time.fromJson(json[0]['time']),
           type: json[0]['type'],
           week: json[0]['week'] as int,
@@ -91,8 +78,7 @@ class Lesson {
           teacher: json[0]['teacher'],
           day: Data.fromJson(json[0]['day']),
           audience: json[0]['audience'],
-          nextLesson: Lesson.fromJson(json[1])
-      );
+          nextLesson: Lesson.fromJson(json[1]));
     }
   }
 }
@@ -105,10 +91,11 @@ class Day {
 
   factory Day.fromJson(Map json) {
     return Day(
-      lessons: json['lessons'].map<Lesson>((lesson) => Lesson.fromJson(lesson)).toList(),
-      index: json['index'],
-      name: json['name']
-    );
+        lessons: json['lessons']
+            .map<Lesson>((lesson) => Lesson.fromJson(lesson))
+            .toList(),
+        index: json['index'],
+        name: json['name']);
   }
 }
 
@@ -118,10 +105,7 @@ class Group {
 
   Group({this.id, this.name});
   factory Group.fromJson(Map<String, dynamic> json) {
-    return Group(
-      id: json['id'],
-      name: json['name']
-    );
+    return Group(id: json['id'], name: json['name']);
   }
 }
 
@@ -136,13 +120,12 @@ class Post {
   Post({this.id, this.title, this.summary, this.body, this.avatar, this.img});
   factory Post.fromJson(Map<String, dynamic> json) {
     return Post(
-      id: json['id'],
-      title: json['title'],
-      summary: json['summary'],
-      body: json['body'],
-      avatar: json['user']['avatar'],
-      img: json['avatar']
-    );
+        id: json['id'],
+        title: json['title'],
+        summary: json['summary'],
+        body: json['body'],
+        avatar: json['user']['avatar'],
+        img: json['avatar']);
   }
 
   Map<String, dynamic> toJson() {
@@ -169,7 +152,6 @@ class Event {
         id: json['id'] as int,
         title: json['title'],
         numDay: json['num_day'],
-        date: json['date']
-    );
+        date: json['date']);
   }
 }

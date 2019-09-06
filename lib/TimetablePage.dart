@@ -37,10 +37,13 @@ class _TimetablePageState extends State<TimetablePage>
     date = DateTime.now();
     dayOfYear = int.parse(DateFormat("D").format(date));
     numW = ((dayOfYear - date.weekday + 10) / 7).floor() % 2;
-    if (numW == 0)
-      _tabController.animateTo(1);
-    else
+    if (numW == 0) {
       _tabController.animateTo(0);
+      numW = 1;
+    } else {
+      _tabController.animateTo(1);
+      numW = 0;
+    }
   }
 
   @override
@@ -65,7 +68,7 @@ class _TimetablePageState extends State<TimetablePage>
     if (widget.group['id'] != null) {
       try {
         var response =
-        await http.get(uriServer + '/api/group/${widget.group['id']}');
+            await http.get(uriServer + '/api/group/${widget.group['id']}');
         if (response.statusCode == 200) {
           var parsed = await json.decode(response.body)['timetable'];
           await prefs.setString('timetable', response.body);
@@ -77,7 +80,8 @@ class _TimetablePageState extends State<TimetablePage>
           return list;
         }
       } catch (e) {
-        var parsed = await json.decode(prefs.getString('timetable'))['timetable'];
+        var parsed =
+            await json.decode(prefs.getString('timetable'))['timetable'];
         var list = List();
         list.add(parsed[0]); // Массив дней 1 недели
         list.add(parsed[1]);
@@ -125,7 +129,6 @@ class _TimetablePageState extends State<TimetablePage>
   lessonCol(Lesson l) {
     bool notNull(Object o) => o != null;
     if (l.nextLesson == null) {
-//      l['name'] = l['name'][0].toUpperCase() + l['name'].substring(1).toLowerCase();
       return Column(children: <Widget>[
         Container(
             padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
@@ -161,9 +164,13 @@ class _TimetablePageState extends State<TimetablePage>
                                 : null,
                             Flexible(
                                 child: new Container(
-                                    child: Text(l.name,
+                                    child: Text(l.name + ' (' + l.type + ')',
                                         style: TextStyle(fontSize: 16.0)))),
                             Text(l.teacher,
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                )),
+                            Text(l.audience,
                                 style: TextStyle(
                                   color: Colors.grey,
                                 ))
@@ -208,9 +215,13 @@ class _TimetablePageState extends State<TimetablePage>
                                 )),
                             Flexible(
                                 child: new Container(
-                                    child: Text(l.name,
+                                    child: Text(l.name + ' (' + l.type + ')',
                                         style: TextStyle(fontSize: 16.0)))),
                             Text(l.teacher,
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                )),
+                            Text(l.audience,
                                 style: TextStyle(
                                   color: Colors.grey,
                                 )),
@@ -223,12 +234,16 @@ class _TimetablePageState extends State<TimetablePage>
                                 )),
                             Flexible(
                                 child: new Container(
-                                    child: Text(l2.name,
+                                    child: Text(l2.name + ' (' + l2.type + ')',
                                         style: TextStyle(fontSize: 16.0)))),
                             Text(l2.teacher,
                                 style: TextStyle(
                                   color: Colors.grey,
                                 )),
+                            Text(l2.audience,
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                ))
                           ]))
                 ])),
         Padding(

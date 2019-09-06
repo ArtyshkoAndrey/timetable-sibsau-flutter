@@ -39,6 +39,9 @@ class _EventsPageState extends State<EventsPage> {
       _postsController.add(res);
       if (counter != res.length) {
         showSnack();
+        setState(() {
+          counter = res.length;
+        });
       }
       return null;
     });
@@ -93,10 +96,14 @@ class _EventsPageState extends State<EventsPage> {
                                       children: <Widget>[
                                         ListTile(
                                           leading: new CircleAvatar(
-                                            child: Text(snapshot.data[index].numDay.toString()),
+                                            child: Text(snapshot
+                                                .data[index].numDay
+                                                .toString()),
                                           ),
-                                          title: Text(snapshot.data[index].date),
-                                          subtitle: Text(snapshot.data[index].title),
+                                          title:
+                                              Text(snapshot.data[index].date),
+                                          subtitle:
+                                              Text(snapshot.data[index].title),
                                         ),
                                       ],
                                     ),
