@@ -60,18 +60,61 @@ class _TimetablePageState extends State<TimetablePage>
     }
   }
 
-  Future<List> getLessons() async {
+  Future<List> getLessons({refresh: false}) async {
     final SharedPreferences prefs = await pref;
     if (widget.group['id'] == null) {
       await Future.delayed(Duration(seconds: 1));
     }
     if (widget.group['id'] != null) {
-      try {
-        var response =
+      if (!refresh) {
+        try {
+          var parsed =
+          await json.decode(prefs.getString('timetable'))['timetable'];
+          var list = List();
+          list.add(parsed[0]); // Массив дней 1 недели
+          list.add(parsed[1]);
+          list[0] = await list[0].map<Day>((day) => Day.fromJson(day)).toList();
+          list[1] = await list[1].map<Day>((day) => Day.fromJson(day)).toList();
+          return list;
+        } catch (e) {
+          try {
+            var response =
             await http.get(uriServer + '/api/group/${widget.group['id']}');
-        if (response.statusCode == 200) {
-          var parsed = await json.decode(response.body)['timetable'];
-          await prefs.setString('timetable', response.body);
+            if (response.statusCode == 200) {
+              var parsed = await json.decode(response.body)['timetable'];
+              await prefs.setString('timetable', response.body);
+              var list = List();
+              list.add(parsed[0]); // Массив дней 1 недели
+              list.add(parsed[1]);
+              list[0] =
+              await list[0].map<Day>((day) => Day.fromJson(day)).toList();
+              list[1] =
+              await list[1].map<Day>((day) => Day.fromJson(day)).toList();
+              return list;
+            }
+          } catch (e) {
+            throw Exception('Failed to load post');
+          }
+        }
+      } else {
+        try {
+          var response =
+          await http.get(uriServer + '/api/group/${widget.group['id']}');
+          if (response.statusCode == 200) {
+            var parsed = await json.decode(response.body)['timetable'];
+            await prefs.setString('timetable', response.body);
+            var list = List();
+            list.add(parsed[0]); // Массив дней 1 недели
+            list.add(parsed[1]);
+            list[0] =
+            await list[0].map<Day>((day) => Day.fromJson(day)).toList();
+            list[1] =
+            await list[1].map<Day>((day) => Day.fromJson(day)).toList();
+            return list;
+          }
+        } catch (e) {
+          var parsed =
+          await json.decode(prefs.getString('timetable'))['timetable'];
           var list = List();
           list.add(parsed[0]); // Массив дней 1 недели
           list.add(parsed[1]);
@@ -79,15 +122,6 @@ class _TimetablePageState extends State<TimetablePage>
           list[1] = await list[1].map<Day>((day) => Day.fromJson(day)).toList();
           return list;
         }
-      } catch (e) {
-        var parsed =
-            await json.decode(prefs.getString('timetable'))['timetable'];
-        var list = List();
-        list.add(parsed[0]); // Массив дней 1 недели
-        list.add(parsed[1]);
-        list[0] = await list[0].map<Day>((day) => Day.fromJson(day)).toList();
-        list[1] = await list[1].map<Day>((day) => Day.fromJson(day)).toList();
-        return list;
       }
       throw Exception('Failed to load post');
     } else {
@@ -261,7 +295,7 @@ class _TimetablePageState extends State<TimetablePage>
         floatingActionButton: FloatingActionButton(
           onPressed: () {
             setState(() {
-              _future = getLessons();
+              _future = getLessons(refresh: true);
             });
           },
           child: Icon(Icons.refresh),

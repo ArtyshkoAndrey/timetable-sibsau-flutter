@@ -1,11 +1,15 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import './DetailsPage.dart';
 import './classes/Timetable.dart';
 import 'package:http/http.dart' as http;
 import './classes/app_config.dart';
 import 'dart:convert';
+import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
+import 'package:flutter_advanced_networkimage/transition.dart';
+import 'package:intl/intl.dart';
 
 class NewsPage extends StatefulWidget {
   @override
@@ -15,16 +19,27 @@ class NewsPage extends StatefulWidget {
 class _NewsPageState extends State<NewsPage> {
   Future _hendlerPostFuture;
   Future<SharedPreferences> pref = SharedPreferences.getInstance();
-  bool internet = true;
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+  new GlobalKey<RefreshIndicatorState>();
+  final GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
+  StreamController _postsController;
+  int counter = 0;
 
   @override
   initState() {
     super.initState();
-    _hendlerPostFuture = getPost();
+    _postsController = new StreamController();
+//    _hendlerPostFuture = getPost();
+    loadPosts(refresh: true);
   }
 
-  Future<List<Post>> getPost() async {
+  Future<List<Post>> getPost({refresh: false}) async {
     final SharedPreferences prefs = await pref;
+    if (refresh) {
+      var parsed =
+      json.decode(prefs.getString('news')).cast<Map<String, dynamic>>();
+      return parsed.map<Post>((value) => Post.fromJson(value)).toList();
+    }
     try {
       var response = await http.get(uriServer + '/api/posts');
       if (response.statusCode == 200) {
@@ -35,9 +50,6 @@ class _NewsPageState extends State<NewsPage> {
         return posts;
       }
     } catch (e) {
-      setState(() {
-        internet = false;
-      });
       var parsed =
           json.decode(prefs.getString('news')).cast<Map<String, dynamic>>();
       return parsed.map<Post>((value) => Post.fromJson(value)).toList();
@@ -45,78 +57,113 @@ class _NewsPageState extends State<NewsPage> {
     throw Exception('Failed to load post');
   }
 
+  Future<Null> _handleRefresh() async {
+    getPost().then((res) async {
+      _postsController.add(res);
+      if (counter != res.length) {
+        showSnack();
+        setState(() {
+          counter = res.length;
+        });
+      }
+      return null;
+    });
+  }
+
+  loadPosts({refresh: false}) async {
+    getPost(refresh: refresh).then((res) async {
+      setState(() {
+        counter = res.length;
+      });
+      _postsController.add(res);
+      return res;
+    });
+  }
+
+  showSnack() {
+    return scaffoldKey.currentState.showSnackBar(
+      SnackBar(
+        content: Text('Добавлены новые новости'),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-        future: _hendlerPostFuture,
-        builder: (context, AsyncSnapshot postsSnap) {
-          switch (postsSnap.connectionState) {
-            case ConnectionState.none:
-              return Center(
-                  child: Text('Нет соединения с сервером',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 14.0)));
-            case ConnectionState.waiting:
-              return Center(child: CircularProgressIndicator());
-            case ConnectionState.done:
-              if (postsSnap.hasError) {
-                return Center(
-                    child: Text('Ошибка загрузки расписания',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 14.0)));
-              } else {
-                return ListView.builder(
-                    itemCount: postsSnap.data.length,
+    return Scaffold(
+      key: scaffoldKey,
+      body: StreamBuilder(
+        stream: _postsController.stream,
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          if (snapshot.hasData) {
+            return RefreshIndicator(
+                key: _refreshIndicatorKey,
+                onRefresh: _handleRefresh,
+                child: ListView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    itemCount: snapshot.data.length,
                     itemBuilder: (context, index) {
-                      Post post = postsSnap.data[index];
-                      return Column(
+                      Post post = snapshot.data[index];
+                      return Container(
+                        margin: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                        child:  Column(
                           mainAxisSize: MainAxisSize.min,
                           children: <Widget>[
                             Card(
-                              child: Container(
-                                margin: EdgeInsets.only(top: 15),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: <Widget>[
-                                    ListTile(
-                                      leading: Image(
-                                        image: AdvancedNetworkImage(
-                                            'http://s.gravatar.com/avatar/f31e533e6ab7a1edff0fa46e5c3b089d.png',
-                                            useDiskCache: true),
-                                        fit: BoxFit.cover,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+                              elevation: 1.0,
+                              child: InkWell(
+                                child: Container(
+                                  margin: EdgeInsets.symmetric(vertical: 15),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: <Widget>[
+                                      ListTile(
+                                        leading: TransitionToImage(
+                                          image: AdvancedNetworkImage(post.avatar, useDiskCache: true),
+                                          placeholder: CircularProgressIndicator(),
+                                          duration: Duration(milliseconds: 300),
+                                        ),
+                                        title: Text(post.title),
+                                        subtitle: Text(post.summary),
                                       ),
-                                      title: Text(post.title),
-                                      subtitle: Text(post.summary),
-                                    ),
-                                    ButtonTheme.bar(
-                                      // make buttons use the appropriate styles for cards
-                                      child: ButtonBar(
-                                        children: <Widget>[
-                                          FlatButton(
-                                            child: const Text('Подробнее'),
-                                            onPressed: () {
-                                              Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          DetailsPage(
-                                                              news: post)));
-                                            },
-                                          ),
-                                        ],
+                                      ListTile(
+                                        subtitle: Row(
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          mainAxisAlignment: MainAxisAlignment.end,
+                                          children: <Widget>[
+                                            Text('${DateFormat('dd.MM.yyyy').format(post.date)}'),
+                                            Padding(
+                                              child: Icon(Icons.calendar_today, color: Colors.black45,),
+                                              padding: EdgeInsets.symmetric(horizontal: 10),
+                                            ),
+                                          ],
+                                        )
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
+                                splashColor: Colors.blue.withAlpha(30),
+                                onTap: () {
+                                  Navigator.of(context).push(new MaterialPageRoute(
+                                      builder: (BuildContext context) => new DetailsPage(news: post)));
+                                },
                               ),
-                            ),
-                          ]);
-                    });
-              }
-              break;
-            default:
-              return Text("connection is just active");
+                            )
+                          ]
+                        ),
+                      );
+                    }));
           }
-        });
+          if (snapshot.connectionState != ConnectionState.done) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+          if (snapshot.hasError) {
+            return Text(snapshot.error);
+          }
+          return null;
+        }));
   }
 }

@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import './classes/Timetable.dart';
-import 'package:flutter_advanced_networkimage/provider.dart';
-import 'package:flutter_html/flutter_html.dart';
 import 'package:url_launcher/url_launcher.dart';
+import './classes/app_config.dart';
+import './DetailsImage.dart';
+import 'package:html/dom.dart' as dom;
+import 'package:flutter_advanced_networkimage/provider.dart';
+import 'package:flutter_advanced_networkimage/transition.dart';
+import './helpClass/flutter_html.dart';
 
 class DetailsPage extends StatefulWidget {
   final Post news;
@@ -15,6 +19,7 @@ class DetailsPage extends StatefulWidget {
 class _DetailsPageState extends State<DetailsPage> {
   bool _isScrollLimitReached = true;
   ScrollController _scrollController;
+  AppConfig _ac;
 
   @override
   void initState() {
@@ -33,100 +38,8 @@ class _DetailsPageState extends State<DetailsPage> {
   }
 
   @override
-//  Widget build(BuildContext context) {
-//    final topContentText = Column(
-//      crossAxisAlignment: CrossAxisAlignment.start,
-//      children: <Widget>[
-//        SizedBox(height: 70.0),
-//        Image(image: AssetImage("assets/images/logo.png"), height: 50),
-////        Icon(
-////          Icons.directions_car,
-////          color: Colors.white,
-////          size: 40.0,
-////        ),
-//        Container(
-//          width: 90.0,
-//          child: new Divider(color: Colors.green),
-//        ),
-//        SizedBox(height: 10.0),
-//        Text(
-//          widget.news.title,
-//          style: TextStyle(color: Colors.white, fontSize: 24.0),
-//        ),
-//        SizedBox(height: 30.0),
-//      ],
-//    );
-//
-//    Widget image() {
-//      if (widget.news.img != null) {
-//        return Container(
-//            padding: EdgeInsets.only(left: 10.0),
-//            height: MediaQuery.of(context).size.height * 0.4,
-//            decoration: new BoxDecoration(
-//                image: DecorationImage(
-//                    image: NetworkImage(
-//                        'https://timetable.artyshko.ru/public/uploads${widget.news.img}'),
-//                    fit: BoxFit.cover)));
-//      } else {
-//        return Container(
-//            padding: EdgeInsets.only(left: 10.0),
-//            height: MediaQuery.of(context).size.height * 0.4,
-//            decoration: new BoxDecoration(
-//                image: DecorationImage(
-//                    image: AssetImage('assets/images/background.png'),
-//                    fit: BoxFit.cover)));
-//      }
-//    }
-//
-//    final topContent = Stack(
-//      children: <Widget>[
-//        image(),
-//        Container(
-//          height: MediaQuery.of(context).size.height * 0.4,
-//          padding: EdgeInsets.all(40.0),
-//          width: MediaQuery.of(context).size.width,
-//          decoration: BoxDecoration(color: Color.fromRGBO(58, 66, 86, .7)),
-//          child: topContentText,
-//        ),
-//        Positioned(
-//          left: 8.0,
-//          top: 60.0,
-//          child: InkWell(
-//            onTap: () {
-//              Navigator.pop(context);
-//            },
-//            child: Icon(Icons.arrow_back, color: Colors.white),
-//          ),
-//        )
-//      ],
-//    );
-//
-//    final bottomContentText = Expanded(
-//        flex: 1,
-//        child: new SingleChildScrollView(
-//            child: Text(
-//          widget.news.body,
-//          style: TextStyle(fontSize: 18.0),
-//        )));
-//    final bottomContent = Container(
-//      width: MediaQuery.of(context).size.width,
-//      height: MediaQuery.of(context).size.height * 0.6,
-//      padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-//      child: Center(
-//        child: Column(
-//          children: <Widget>[bottomContentText],
-//        ),
-//      ),
-//    );
-//
-//    return Scaffold(
-//      body: Column(
-//        children: <Widget>[topContent, bottomContent],
-//      ),
-//    );
-//  }
-
   Widget build(BuildContext context) {
+    _ac = AppConfig(context);
     return Scaffold(
       body: CustomScrollView(
         controller: _scrollController,
@@ -140,7 +53,7 @@ class _DetailsPageState extends State<DetailsPage> {
               flexibleSpace: FlexibleSpaceBar(
                 title: _isScrollLimitReached
                     ? ConstrainedBox(
-                  constraints: BoxConstraints(maxWidth: 200),
+                  constraints: BoxConstraints(maxWidth: _ac.rW(50)),
                   child: Text(
                     widget.news.title,
                     textScaleFactor: 0.8,
@@ -198,9 +111,9 @@ class _DetailsPageState extends State<DetailsPage> {
             child: Container(
               child: Html(
                 data: widget.news.body,
-                padding: EdgeInsets.all(10.0),
+                padding: EdgeInsets.all(15.0),
                 backgroundColor: Colors.white70,
-                defaultTextStyle: TextStyle(fontFamily: 'serif', fontSize: 16),
+                defaultTextStyle: TextStyle(fontFamily: 'Open-Sans', fontSize: 16),
                 linkStyle: const TextStyle(
                   color: Colors.blueAccent,
                 ),
