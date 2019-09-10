@@ -12,11 +12,21 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import './EventsPage.dart';
 import './SettingsPage.dart';
 import './MapsPage.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() {
   FirebaseAnalytics analytics = FirebaseAnalytics();
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   var notified;
+  final PermissionHandler _permissionHandler = PermissionHandler();
+  Future<bool> _requestPermission(PermissionGroup permission) async {
+    var result = await _permissionHandler.requestPermissions([permission]);
+    if (result[permission] == PermissionStatus.granted) {
+      return true;
+    }
+    return false;
+  }
+  _requestPermission(PermissionGroup.location);
   SharedPreferences.getInstance().then((prefs) {
     notified = prefs.getBool('notifications');
     if (notified == null) {
@@ -24,7 +34,7 @@ void main() {
       _firebaseMessaging.subscribeToTopic('allDevice');
     }
   });
-  runApp(new MaterialApp(initialRoute: '/', navigatorObservers: [
+  runApp(new MaterialApp(initialRoute: '/', debugShowCheckedModeBanner: false, navigatorObservers: [
     FirebaseAnalyticsObserver(analytics: analytics),
   ], routes: {
     '/': (context) => CheckAuth(),
@@ -91,7 +101,8 @@ class MyTabsState extends State<MyTabs> with SingleTickerProviderStateMixin {
   void _select(Choice choice) async {
     if (choice.title == 'Выйти') {
       var prefs = await SharedPreferences.getInstance();
-      prefs.remove('group');
+      await prefs.remove('group');
+      await prefs.remove('timetable');
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(

@@ -11,20 +11,19 @@ class DetailsImage extends StatefulWidget {
 }
 
 class _DetailsImageState extends State<DetailsImage> {
-
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      appBar: AppBar(
-        iconTheme: IconThemeData(
-          color: Colors.white, //change your color here
+        appBar: AppBar(
+          iconTheme: IconThemeData(
+            color: Colors.white, //change your color here
+          ),
+          title: null,
+          backgroundColor: Colors.black, //No more green
+          elevation: 0.0, //Shadow gone
         ),
-        title: null,
-        backgroundColor: Colors.black, //No more green
-        elevation: 0.0, //Shadow gone
-      ),
-      body: Container(
-        child: PhotoView(
+        body: Container(
+            child: PhotoView(
           imageProvider: AdvancedNetworkImage(
             widget.src,
             useDiskCache: true,
@@ -38,8 +37,6 @@ class _DetailsImageState extends State<DetailsImage> {
           heroTag: widget.src,
           backgroundDecoration: BoxDecoration(color: Colors.black),
           gaplessPlayback: false,
-        )
-      )
-    );
+        )));
   }
 }

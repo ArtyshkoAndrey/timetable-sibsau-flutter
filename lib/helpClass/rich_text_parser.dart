@@ -782,32 +782,30 @@ class HtmlRichTextParser extends StatelessWidget {
                     },
                   ));
                 } else {
-
-                  parseContext.rootWidgetList.add(
-                      Container(
-                          padding: EdgeInsets.only(top: 20),
-                          child: GestureDetector(
-                            child: Hero(
-                              tag: node.attributes['src'],
-                              child: TransitionToImage(
-                                image: AdvancedNetworkImage(
-                                  node.attributes['src'],
-                                  useDiskCache: true,
-                                  cacheRule: CacheRule(maxAge: const Duration(days: 7)),
-                                ),
-                                fit: BoxFit.cover,
-                                placeholder: const Icon(Icons.refresh),
-                                enableRefresh: true,
-                              ),
+                  parseContext.rootWidgetList.add(Container(
+                      padding: EdgeInsets.only(top: 20),
+                      child: GestureDetector(
+                        child: Hero(
+                          tag: node.attributes['src'],
+                          child: TransitionToImage(
+                            image: AdvancedNetworkImage(
+                              node.attributes['src'],
+                              useDiskCache: true,
+                              cacheRule:
+                                  CacheRule(maxAge: const Duration(days: 7)),
                             ),
-                            onTap: () {
-                              Navigator.push(context, MaterialPageRoute(builder: (context) {
-                                return DetailsImage(src: node.attributes['src']);
-                              }));
-                            },
-                          )
-                      )
-                  );
+                            fit: BoxFit.cover,
+                            placeholder: const Icon(Icons.refresh),
+                            enableRefresh: true,
+                          ),
+                        ),
+                        onTap: () {
+                          Navigator.push(context,
+                              MaterialPageRoute(builder: (context) {
+                            return DetailsImage(src: node.attributes['src']);
+                          }));
+                        },
+                      )));
                 }
                 if (node.attributes['alt'] != null) {
                   parseContext.rootWidgetList.add(BlockText(
@@ -943,39 +941,11 @@ class HtmlRichTextParser extends StatelessWidget {
     }
   }
 
-  Paint _getPaint(Color color) {
-    Paint paint = new Paint();
-    paint.color = color;
-    return paint;
-  }
-
   String condenseHtmlWhitespace(String stringToTrim) {
     stringToTrim = stringToTrim.replaceAll("\n", " ");
     while (stringToTrim.indexOf("  ") != -1) {
       stringToTrim = stringToTrim.replaceAll("  ", " ");
     }
     return stringToTrim;
-  }
-
-  bool _isNotFirstBreakTag(dom.Node node) {
-    int index = node.parentNode.nodes.indexOf(node);
-    if (index == 0) {
-      if (node.parentNode == null) {
-        return false;
-      }
-      return _isNotFirstBreakTag(node.parentNode);
-    } else if (node.parentNode.nodes[index - 1] is dom.Element) {
-      if ((node.parentNode.nodes[index - 1] as dom.Element).localName == "br") {
-        return true;
-      }
-      return false;
-    } else if (node.parentNode.nodes[index - 1] is dom.Text) {
-      if ((node.parentNode.nodes[index - 1] as dom.Text).text.trim() == "") {
-        return _isNotFirstBreakTag(node.parentNode.nodes[index - 1]);
-      } else {
-        return false;
-      }
-    }
-    return false;
   }
 }

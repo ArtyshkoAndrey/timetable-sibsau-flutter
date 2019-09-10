@@ -117,8 +117,17 @@ class Post {
   final String avatar;
   final String img;
   final DateTime date;
+  final String userName;
 
-  Post({this.id, this.title, this.summary, this.body, this.avatar, this.img, this.date});
+  Post(
+      {this.id,
+      this.title,
+      this.summary,
+      this.body,
+      this.avatar,
+      this.img,
+      this.date,
+      this.userName});
   factory Post.fromJson(Map<String, dynamic> json) {
     return Post(
         id: json['id'],
@@ -127,6 +136,7 @@ class Post {
         body: json['body'],
         avatar: json['user']['avatar'],
         img: json['avatar'],
+        userName: json['user']['name'],
         date: DateTime.parse(json['created_at']));
   }
 

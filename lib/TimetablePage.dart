@@ -1,11 +1,11 @@
 import 'dart:convert';
 
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'dart:async';
+import 'package:flutter/foundation.dart';
 import './classes/Timetable.dart';
 import './classes/app_config.dart';
 
@@ -27,9 +27,13 @@ class _TimetablePageState extends State<TimetablePage>
   DateTime date;
   int dayOfYear;
   int numW;
+  List ctrl = [];
+  bool flagsAutoScroll = false;
 
   @override
   initState() {
+    ctrl.add(PageController());
+    ctrl.add(PageController());
     super.initState();
     _tabController = new TabController(vsync: this, length: 3);
     _tabController.addListener(_handleTabSelection);
@@ -44,6 +48,8 @@ class _TimetablePageState extends State<TimetablePage>
       _tabController.animateTo(1);
       numW = 0;
     }
+    
+    
   }
 
   @override
@@ -55,12 +61,12 @@ class _TimetablePageState extends State<TimetablePage>
   void _handleTabSelection() {
     if (_tabController.indexIsChanging) {
       setState(() {
-        _current = 0;
+        flagsAutoScroll = false;
       });
     }
   }
 
-  Future<List> getLessons({refresh: false}) async {
+  Future<List> getLessons({refresh = false}) async {
     final SharedPreferences prefs = await pref;
     if (widget.group['id'] == null) {
       await Future.delayed(Duration(seconds: 1));
@@ -192,9 +198,9 @@ class _TimetablePageState extends State<TimetablePage>
                           children: <Widget>[
                             l.subgroup != null
                                 ? Text(l.subgroup,
-                                    style: TextStyle(
-                                      color: Colors.grey,
-                                    ))
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                ))
                                 : null,
                             Flexible(
                                 child: new Container(
@@ -295,6 +301,8 @@ class _TimetablePageState extends State<TimetablePage>
         floatingActionButton: FloatingActionButton(
           onPressed: () {
             setState(() {
+              flagsAutoScroll = false;
+              _current = 0;
               _future = getLessons(refresh: true);
             });
           },
@@ -333,6 +341,17 @@ class _TimetablePageState extends State<TimetablePage>
     );
   }
 
+  intPage(days, numWeek) {
+    int intPage = 0;
+    days.asMap().forEach((index, day) {
+      if (date.weekday == day.index && numW != numWeek) {
+        _current = index;
+        intPage = index;
+      }
+    });
+    return intPage;
+  }
+
   // Изменить в классе дня индекс и имя дня недели. В Future изменить сборку под переделанный класс
   Widget week(BuildContext context, int numWeek) {
     return Stack(
@@ -363,109 +382,107 @@ class _TimetablePageState extends State<TimetablePage>
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14.0)));
                     }
-                    try {
-                      return Stack(children: [
-                        CarouselSlider(
-                          items: days.map<Widget>((dayTemp) {
-                            Day day = dayTemp;
-                            return Builder(builder: (BuildContext context) {
+//                    try {
+                    return Stack(children: [
+                      PageView.builder(
+                        onPageChanged: (index) {
+                          setState(() {
+                            _current = index;
+                          });
+                        },
+                        controller: ctrl[numWeek],
+                        itemCount: days.length,
+                        itemBuilder: (context, int currentIdx) {
+                          Day day = days[currentIdx];
+                          if (intPage(days, numWeek) != 0 && flagsAutoScroll == false) {
+                            flagsAutoScroll = true;
+                            ctrl[numWeek].animateToPage(intPage(days, numWeek), duration: new Duration(milliseconds: 500), curve: Curves.linear);
+                          }
+                          return Container(
+                              width: MediaQuery.of(context).size.width,
+                              margin: EdgeInsets.only(
+                                  left: 20.0,
+                                  right: 20.0,
+                                  top: 20,
+                                  bottom: 30),
+                              decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      blurRadius: 13.0,
+                                      color: Colors.black.withOpacity(.2),
+                                      offset: Offset(6.0, 1.0),
+                                    )
+                                  ]),
+                              child: ListView.builder(
+                                  itemCount: day.lessons.length + 1,
+                                  itemBuilder: (context, index) {
+                                    if (index == 0) {
+                                      return Container(
+                                          decoration: BoxDecoration(
+                                              color: Color(0xFF006CB5),
+                                              borderRadius:
+                                              BorderRadius.only(
+                                                  topRight:
+                                                  Radius.circular(
+                                                      10.0),
+                                                  topLeft:
+                                                  Radius.circular(
+                                                      10.0))),
+                                          padding: EdgeInsets.symmetric(
+                                              vertical: 7, horizontal: 5),
+                                          child: Row(
+                                              mainAxisAlignment:
+                                              MainAxisAlignment
+                                                  .spaceBetween,
+                                              children: <Widget>[
+                                                Container(
+                                                    margin: EdgeInsets.only(
+                                                        left: 20),
+                                                    child: Text(day.name,
+                                                        style: TextStyle(
+                                                            color: Colors
+                                                                .white,
+                                                            fontSize: 14.0,
+                                                            fontWeight:
+                                                            FontWeight
+                                                                .bold))),
+                                                getYesterday(day, numWeek)
+                                              ]));
+                                    } else {
+                                      return lessonCol(
+                                          day.lessons[index - 1]);
+                                    }
+                                  }));
+                        }
+                      ),
+
+                      Positioned(
+                          bottom: 5,
+                          left: 0.0,
+                          right: 0.0,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: snapshot.data[numWeek].map<Widget>((i) {
                               return Container(
-                                  width: MediaQuery.of(context).size.width,
-                                  margin: EdgeInsets.only(
-                                      left: 20.0,
-                                      right: 20.0,
-                                      top: 20,
-                                      bottom: 30),
-                                  decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(10.0),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          blurRadius: 13.0,
-                                          color: Colors.black.withOpacity(.2),
-                                          offset: Offset(6.0, 1.0),
-                                        )
-                                      ]),
-                                  child: ListView.builder(
-                                      itemCount: day.lessons.length + 1,
-                                      itemBuilder: (context, index) {
-                                        if (index == 0) {
-                                          return Container(
-                                              decoration: BoxDecoration(
-                                                  color: Color(0xFF006CB5),
-                                                  borderRadius:
-                                                      BorderRadius.only(
-                                                          topRight:
-                                                              Radius.circular(
-                                                                  10.0),
-                                                          topLeft:
-                                                              Radius.circular(
-                                                                  10.0))),
-                                              padding: EdgeInsets.symmetric(
-                                                  vertical: 7, horizontal: 5),
-                                              child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  children: <Widget>[
-                                                    Container(
-                                                        margin: EdgeInsets.only(
-                                                            left: 20),
-                                                        child: Text(day.name,
-                                                            style: TextStyle(
-                                                                color: Colors
-                                                                    .white,
-                                                                fontSize: 14.0,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold))),
-                                                    getYesterday(day, numWeek)
-                                                  ]));
-                                        } else {
-                                          return lessonCol(
-                                              day.lessons[index - 1]);
-                                        }
-                                      }));
-                            });
-                          }).toList(),
-                          onPageChanged: (index) {
-                            setState(() {
-                              _current = index;
-                            });
-                          },
-                          enlargeCenterPage: true,
-                          aspectRatio: 9 / 16,
-                          height: MediaQuery.of(context).size.height - 160,
-                          viewportFraction: 1.0,
-                          enableInfiniteScroll: false,
-                          reverse: false,
-                          scrollDirection: Axis.horizontal,
-                        ),
-                        Positioned(
-                            bottom: 5,
-                            left: 0.0,
-                            right: 0.0,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: snapshot.data[numWeek].map<Widget>((i) {
-                                return Container(
-                                  width: 8.0,
-                                  height: 8.0,
-                                  margin: EdgeInsets.symmetric(
-                                      vertical: 5.0, horizontal: 10.0),
-                                  decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: _current ==
-                                              snapshot.data[numWeek].indexOf(i)
-                                          ? Color.fromRGBO(0, 108, 181, 0.9)
-                                          : Color.fromRGBO(0, 108, 181, 0.4)),
-                                );
-                              }).toList(),
-                            ))
-                      ]);
-                    } catch (e) {
-                      return Center(child: Text('Ошибка'));
-                    }
+                                width: 8.0,
+                                height: 8.0,
+                                margin: EdgeInsets.symmetric(
+                                    vertical: 5.0, horizontal: 10.0),
+                                decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: _current ==
+                                        snapshot.data[numWeek].indexOf(i)
+                                        ? Color.fromRGBO(0, 108, 181, 0.9)
+                                        : Color.fromRGBO(0, 108, 181, 0.4)),
+                              );
+                            }).toList(),
+                          ))
+                    ]);
+//                    } catch (e) {
+//                      return Center(child: Text('Ошибка'));
+//                    }
                   }
                   break;
                 default:
