@@ -1,13 +1,14 @@
-import 'dart:convert';
+import 'dart:convert' show json;
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:async';
+import 'dart:async' show Future;
 import 'package:flutter/foundation.dart';
-import './classes/Timetable.dart';
-import './classes/app_config.dart';
+import 'package:timetable/classes/Timetable.dart';
+import 'package:timetable/classes/app_config.dart';
+
 
 class TimetablePage extends StatefulWidget {
   final Map group;
@@ -48,8 +49,6 @@ class _TimetablePageState extends State<TimetablePage>
       _tabController.animateTo(1);
       numW = 0;
     }
-    
-    
   }
 
   @override
@@ -75,7 +74,7 @@ class _TimetablePageState extends State<TimetablePage>
       if (!refresh) {
         try {
           var parsed =
-          await json.decode(prefs.getString('timetable'))['timetable'];
+              await json.decode(prefs.getString('timetable'))['timetable'];
           var list = List();
           list.add(parsed[0]); // Массив дней 1 недели
           list.add(parsed[1]);
@@ -84,8 +83,12 @@ class _TimetablePageState extends State<TimetablePage>
           return list;
         } catch (e) {
           try {
-            var response =
-            await http.get(uriServer + '/api/group/${widget.group['id']}');
+            var response;
+            if (widget.group['name'] != null) {
+              response = await http.get(uriServer + '/api/group/${widget.group['id']}');
+            } else {
+              response = await http.get(uriServer + '/api/teacher/${widget.group['id']}');
+            }
             if (response.statusCode == 200) {
               var parsed = await json.decode(response.body)['timetable'];
               await prefs.setString('timetable', response.body);
@@ -93,9 +96,9 @@ class _TimetablePageState extends State<TimetablePage>
               list.add(parsed[0]); // Массив дней 1 недели
               list.add(parsed[1]);
               list[0] =
-              await list[0].map<Day>((day) => Day.fromJson(day)).toList();
+                  await list[0].map<Day>((day) => Day.fromJson(day)).toList();
               list[1] =
-              await list[1].map<Day>((day) => Day.fromJson(day)).toList();
+                  await list[1].map<Day>((day) => Day.fromJson(day)).toList();
               return list;
             }
           } catch (e) {
@@ -104,8 +107,12 @@ class _TimetablePageState extends State<TimetablePage>
         }
       } else {
         try {
-          var response =
-          await http.get(uriServer + '/api/group/${widget.group['id']}');
+          var response;
+          if (widget.group['name'] != null) {
+            response = await http.get(uriServer + '/api/group/${widget.group['id']}');
+          } else {
+            response = await http.get(uriServer + '/api/teacher/${widget.group['id']}');
+          }
           if (response.statusCode == 200) {
             var parsed = await json.decode(response.body)['timetable'];
             await prefs.setString('timetable', response.body);
@@ -113,14 +120,14 @@ class _TimetablePageState extends State<TimetablePage>
             list.add(parsed[0]); // Массив дней 1 недели
             list.add(parsed[1]);
             list[0] =
-            await list[0].map<Day>((day) => Day.fromJson(day)).toList();
+                await list[0].map<Day>((day) => Day.fromJson(day)).toList();
             list[1] =
-            await list[1].map<Day>((day) => Day.fromJson(day)).toList();
+                await list[1].map<Day>((day) => Day.fromJson(day)).toList();
             return list;
           }
         } catch (e) {
           var parsed =
-          await json.decode(prefs.getString('timetable'))['timetable'];
+              await json.decode(prefs.getString('timetable'))['timetable'];
           var list = List();
           list.add(parsed[0]); // Массив дней 1 недели
           list.add(parsed[1]);
@@ -198,9 +205,9 @@ class _TimetablePageState extends State<TimetablePage>
                           children: <Widget>[
                             l.subgroup != null
                                 ? Text(l.subgroup,
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                ))
+                                    style: TextStyle(
+                                      color: Colors.grey,
+                                    ))
                                 : null,
                             Flexible(
                                 child: new Container(
@@ -382,107 +389,110 @@ class _TimetablePageState extends State<TimetablePage>
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14.0)));
                     }
-//                    try {
-                    return Stack(children: [
-                      PageView.builder(
-                        onPageChanged: (index) {
-                          setState(() {
-                            _current = index;
-                          });
-                        },
-                        controller: ctrl[numWeek],
-                        itemCount: days.length,
-                        itemBuilder: (context, int currentIdx) {
-                          Day day = days[currentIdx];
-                          if (intPage(days, numWeek) != 0 && flagsAutoScroll == false) {
-                            flagsAutoScroll = true;
-                            ctrl[numWeek].animateToPage(intPage(days, numWeek), duration: new Duration(milliseconds: 500), curve: Curves.linear);
-                          }
-                          return Container(
-                              width: MediaQuery.of(context).size.width,
-                              margin: EdgeInsets.only(
-                                  left: 20.0,
-                                  right: 20.0,
-                                  top: 20,
-                                  bottom: 30),
-                              decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(10.0),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      blurRadius: 13.0,
-                                      color: Colors.black.withOpacity(.2),
-                                      offset: Offset(6.0, 1.0),
-                                    )
-                                  ]),
-                              child: ListView.builder(
-                                  itemCount: day.lessons.length + 1,
-                                  itemBuilder: (context, index) {
-                                    if (index == 0) {
-                                      return Container(
-                                          decoration: BoxDecoration(
-                                              color: Color(0xFF006CB5),
-                                              borderRadius:
-                                              BorderRadius.only(
-                                                  topRight:
-                                                  Radius.circular(
-                                                      10.0),
-                                                  topLeft:
-                                                  Radius.circular(
-                                                      10.0))),
-                                          padding: EdgeInsets.symmetric(
-                                              vertical: 7, horizontal: 5),
-                                          child: Row(
-                                              mainAxisAlignment:
-                                              MainAxisAlignment
-                                                  .spaceBetween,
-                                              children: <Widget>[
-                                                Container(
-                                                    margin: EdgeInsets.only(
-                                                        left: 20),
-                                                    child: Text(day.name,
-                                                        style: TextStyle(
-                                                            color: Colors
-                                                                .white,
-                                                            fontSize: 14.0,
-                                                            fontWeight:
-                                                            FontWeight
-                                                                .bold))),
-                                                getYesterday(day, numWeek)
-                                              ]));
-                                    } else {
-                                      return lessonCol(
-                                          day.lessons[index - 1]);
-                                    }
-                                  }));
-                        }
-                      ),
-
-                      Positioned(
-                          bottom: 5,
-                          left: 0.0,
-                          right: 0.0,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: snapshot.data[numWeek].map<Widget>((i) {
+                    try {
+                      return Stack(children: [
+                        PageView.builder(
+                            onPageChanged: (index) {
+                              setState(() {
+                                _current = index;
+                              });
+                            },
+                            controller: ctrl[numWeek],
+                            itemCount: days.length,
+                            itemBuilder: (context, int currentIdx) {
+                              Day day = days[currentIdx];
+                              if (flagsAutoScroll == false) {
+                                if (intPage(days, numWeek) != 0) {
+                                  flagsAutoScroll = true;
+                                  ctrl[numWeek].animateToPage(
+                                      intPage(days, numWeek),
+                                      duration: new Duration(milliseconds: 500),
+                                      curve: Curves.linear);
+                                }
+                              }
                               return Container(
-                                width: 8.0,
-                                height: 8.0,
-                                margin: EdgeInsets.symmetric(
-                                    vertical: 5.0, horizontal: 10.0),
-                                decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: _current ==
-                                        snapshot.data[numWeek].indexOf(i)
-                                        ? Color.fromRGBO(0, 108, 181, 0.9)
-                                        : Color.fromRGBO(0, 108, 181, 0.4)),
-                              );
-                            }).toList(),
-                          ))
-                    ]);
-//                    } catch (e) {
-//                      return Center(child: Text('Ошибка'));
-//                    }
+                                  width: MediaQuery.of(context).size.width,
+                                  margin: EdgeInsets.only(
+                                      left: 20.0,
+                                      right: 20.0,
+                                      top: 20,
+                                      bottom: 30),
+                                  decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(10.0),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          blurRadius: 13.0,
+                                          color: Colors.black.withOpacity(.2),
+                                          offset: Offset(6.0, 1.0),
+                                        )
+                                      ]),
+                                  child: ListView.builder(
+                                      itemCount: day.lessons.length + 1,
+                                      itemBuilder: (context, index) {
+                                        if (index == 0) {
+                                          return Container(
+                                              decoration: BoxDecoration(
+                                                  color: Color(0xFF006CB5),
+                                                  borderRadius:
+                                                      BorderRadius.only(
+                                                          topRight:
+                                                              Radius.circular(
+                                                                  10.0),
+                                                          topLeft:
+                                                              Radius.circular(
+                                                                  10.0))),
+                                              padding: EdgeInsets.symmetric(
+                                                  vertical: 7, horizontal: 5),
+                                              child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: <Widget>[
+                                                    Container(
+                                                        margin: EdgeInsets.only(
+                                                            left: 20),
+                                                        child: Text(day.name,
+                                                            style: TextStyle(
+                                                                color: Colors
+                                                                    .white,
+                                                                fontSize: 14.0,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold))),
+                                                    getYesterday(day, numWeek)
+                                                  ]));
+                                        } else {
+                                          return lessonCol(
+                                              day.lessons[index - 1]);
+                                        }
+                                      }));
+                            }),
+                        Positioned(
+                            bottom: 5,
+                            left: 0.0,
+                            right: 0.0,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: snapshot.data[numWeek].map<Widget>((i) {
+                                return Container(
+                                  width: 8.0,
+                                  height: 8.0,
+                                  margin: EdgeInsets.symmetric(
+                                      vertical: 5.0, horizontal: 10.0),
+                                  decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: _current ==
+                                              snapshot.data[numWeek].indexOf(i)
+                                          ? Color.fromRGBO(0, 108, 181, 0.9)
+                                          : Color.fromRGBO(0, 108, 181, 0.4)),
+                                );
+                              }).toList(),
+                            ))
+                      ]);
+                    } catch (e) {
+                      return Center(child: Text('Ошибка'));
+                    }
                   }
                   break;
                 default:

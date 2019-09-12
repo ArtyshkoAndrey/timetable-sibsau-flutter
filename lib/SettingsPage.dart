@@ -58,11 +58,14 @@ class _SettingsPageState extends State<SettingsPage> {
             });
           },
         ),
-//          ListTile(
-//            title: Text('Для разработчика'),
-//            subtitle: Text('Настройки разработчика'),
-//            onTap: (){Navigator.of(context).push(new MaterialPageRoute(builder: (BuildContext context) => new DevelopPage()));},
-//          )
+        ListTile(
+          title: Text('Для разработчика'),
+          subtitle: Text('Настройки разработчика'),
+          onTap: () {
+            Navigator.of(context).push(new MaterialPageRoute(
+                builder: (BuildContext context) => new DevelopPage()));
+          },
+        )
       ]),
     );
   }

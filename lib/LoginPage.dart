@@ -35,6 +35,11 @@ class _LoginPageState extends State<LoginPage> {
   List items = List();
   var loading = false;
   String searchText = '';
+  bool showChoose = true;
+  bool showGroup = false;
+  bool showTeacher = false;
+  String labelTextInInput = 'Группа';
+  String labelTextInText = 'Введите название группы';
 
   searchResults(String query) async {
     if (query != '') {
@@ -43,13 +48,25 @@ class _LoginPageState extends State<LoginPage> {
         searchText = query;
       });
       try {
-        final response =
-            await http.get(uriServer + 'api/group/search/$query/3');
-        setState(() {
-          items.clear();
-          items.addAll(json.decode(response.body)['groups'] as List);
-          loading = false;
-        });
+        if (showGroup) {
+          print(333);
+          final response =
+          await http.get(uriServer + 'api/group/search/$query/3');
+          setState(() {
+            items.clear();
+            items.addAll(json.decode(response.body)['groups'] as List);
+            loading = false;
+          });
+        } else if (showTeacher) {
+          print(123);
+          final response =
+          await http.get(uriServer + 'api/teacher/search/$query/3');
+          setState(() {
+            items.clear();
+            items.addAll(json.decode(response.body)['teacher'] as List);
+            loading = false;
+          });
+        }
       } catch (e) {
         setState(() {
           items.clear();
@@ -66,8 +83,13 @@ class _LoginPageState extends State<LoginPage> {
 
   saveGroupAndRedirect(Object group) async {
     var prefs = await SharedPreferences.getInstance();
-    prefs.setString('group', json.encode(group));
-//    Navigator.pushReplacementNamed(context, '/timetable');
+    if (showGroup) {
+      prefs.remove('teacher');
+      prefs.setString('group', json.encode(group));
+    } else if (showTeacher) {
+      prefs.remove('group');
+      prefs.setString('teacher', json.encode(group));
+    }
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -84,7 +106,7 @@ class _LoginPageState extends State<LoginPage> {
             margin: EdgeInsets.only(bottom: _ac.rHP(23)),
             child: Card(
                 child: ListTile(
-                    title: Text('Введите название группы'), dense: true)));
+                    title: Text(labelTextInText), dense: true)));
       }
       if (items.length > 0) {
         return Container(
@@ -100,7 +122,7 @@ class _LoginPageState extends State<LoginPage> {
                     },
                     child: Card(
                         child: ListTile(
-                            title: Text('${items[index]['name']}'),
+                            title: showGroup ? Text('${items[index]['name']}') : showTeacher ? Text('${items[index]['full_name']}') : Text(''),
                             dense: true)));
               },
             ));
@@ -124,9 +146,9 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     _ac = AppConfig(context);
-
+    bool notNull(Object o) => o != null;
     final groupField = Container(
-//      height: 60,
+      margin: EdgeInsets.only(top: 20),
         padding: EdgeInsets.symmetric(horizontal: 3),
         child: TextField(
           style: style,
@@ -137,7 +159,7 @@ class _LoginPageState extends State<LoginPage> {
           },
           decoration: InputDecoration(
             contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
-            hintText: "Группа",
+            hintText: labelTextInInput,
             border: OutlineInputBorder(),
             filled: true,
             fillColor: Colors.white,
@@ -159,38 +181,166 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     return Scaffold(
-      body: Container(
+      body: Stack(children: <Widget>[showGroup ? Center( child:Container(
+          alignment: Alignment(0.0, 0.0),
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage("assets/images/bg.jpg"),
+                fit: BoxFit.cover,
+              ),
+            ),
+            child: new LayoutBuilder(
+                builder: (BuildContext context, BoxConstraints constraints) {
+              return Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 35.0, vertical: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        logo(constraints),
+                        SizedBox(
+                          height: _ac.rHP(2),
+                        ),
+                        groupField
+                      ],
+                    ),
+                    searchList()
+                  ],
+                ),
+              );
+            }))) :
+        showChoose ? Container(
+          height: _ac.rH(100),
+          width: _ac.rW(100),
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: AssetImage("assets/images/background.png"),
+              image: AssetImage("assets/images/bg.jpg"),
               fit: BoxFit.cover,
             ),
           ),
-          child: new LayoutBuilder(
-              builder: (BuildContext context, BoxConstraints constraints) {
-            return Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 35.0, vertical: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      logo(constraints),
-                      SizedBox(
-                        height: _ac.rHP(2),
-                      ),
-                      groupField
-                    ],
-                  ),
-                  searchList()
-                ],
+          child:  new LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              return Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 50.0, vertical: 20),
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.max,
+                      children: <Widget>[
+                        OutlineButton(
+                          highlightedBorderColor: Colors.white,
+                          borderSide: BorderSide(color: Colors.white),
+                          shape: StadiumBorder(),
+                          color: Colors.transparent,
+                          textColor: Colors.white,
+                          child: new Text(
+                            'Студент',
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              showGroup = true;
+                              showChoose = false;
+                              showTeacher = false;
+                              labelTextInInput = 'Группа';
+                              labelTextInText = 'Введите название группы';
+                            });
+                          }
+                        ),
+                        OutlineButton(
+                          highlightedBorderColor: Colors.white,
+                          borderSide: BorderSide(color: Colors.white),
+                          shape: StadiumBorder(),
+                          color: Colors.transparent,
+                          textColor: Colors.white,
+                          child: new Text(
+                            'Преподаватель',
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              showGroup = false;
+                              showChoose = false;
+                              showTeacher = true;
+                              labelTextInInput = 'ФИО';
+                              labelTextInText = 'Введите ФИО преподавателя';
+                            });
+                          }
+                        ),
+                      ]
+                  )
+              );
+            })
+        ) :
+        showTeacher ? Center( child: Container(
+          alignment: Alignment(0.0, 0.0),
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage("assets/images/bg.jpg"),
+                fit: BoxFit.cover,
               ),
-            );
-          })),
-    );
+            ),
+            child: new LayoutBuilder(
+                builder: (BuildContext context, BoxConstraints constraints) {
+                  return Padding(
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: 35.0, vertical: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            logo(constraints),
+                            SizedBox(
+                              height: _ac.rHP(2),
+                            ),
+                            groupField
+                          ],
+                        ),
+                        searchList()
+                      ],
+                    ),
+                  );
+                }))) : Container(),
+        SizedBox(
+          width: _ac.rW(100),
+          height: 60,
+          child: new AppBar(
+            elevation: 0.0,
+            title: null,
+            backgroundColor: Colors.transparent,
+            automaticallyImplyLeading: true,
+            leading: LayoutBuilder(
+                builder: (BuildContext context, BoxConstraints constraints) {
+                  if (showTeacher || showGroup) {
+                    return IconButton(icon: Icon(Icons.arrow_back),
+                      onPressed: () {
+                      print(123);
+                        setState(() {
+                          showTeacher = false;
+                          showGroup = false;
+                          showChoose = true;
+                        });
+                      },
+                      splashColor: Colors.transparent,
+                      hoverColor: Colors.transparent,
+                      highlightColor: Colors.transparent,
+                      focusColor: Colors.transparent,
+                    );
+                  } else {
+                    return new Container();
+                  }
+                }
+            ),
+          ),
+        )
+    ]));
   }
 }

@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:mdi/mdi.dart';
-import './TimetablePage.dart';
-import './NewsPage.dart';
-import './LoginPage.dart';
-import './CheckAuth.dart';
+import 'package:timetable/TimetablePage.dart';
+import 'package:timetable/NewsPage.dart';
+import 'package:timetable/LoginPage.dart';
+import 'package:timetable/CheckAuth.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_analytics/observer.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import './EventsPage.dart';
-import './SettingsPage.dart';
-import './MapsPage.dart';
+import 'package:timetable/EventsPage.dart';
+import 'package:timetable/SettingsPage.dart';
+import 'package:timetable/MapsPage.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter/services.dart';
+import 'package:get_version/get_version.dart';
 
 void main() {
   FirebaseAnalytics analytics = FirebaseAnalytics();
@@ -26,6 +28,7 @@ void main() {
     }
     return false;
   }
+
   _requestPermission(PermissionGroup.location);
   SharedPreferences.getInstance().then((prefs) {
     notified = prefs.getBool('notifications');
@@ -34,13 +37,17 @@ void main() {
       _firebaseMessaging.subscribeToTopic('allDevice');
     }
   });
-  runApp(new MaterialApp(initialRoute: '/', debugShowCheckedModeBanner: false, navigatorObservers: [
-    FirebaseAnalyticsObserver(analytics: analytics),
-  ], routes: {
-    '/': (context) => CheckAuth(),
-    '/login': (context) => LoginPage(title: 'Вход'),
-    '/timetable': (context) => MyTabs()
-  }));
+  runApp(new MaterialApp(
+      initialRoute: '/',
+      debugShowCheckedModeBanner: false,
+      navigatorObservers: [
+        FirebaseAnalyticsObserver(analytics: analytics),
+      ],
+      routes: {
+        '/': (context) => CheckAuth(),
+        '/login': (context) => LoginPage(title: 'Вход'),
+        '/timetable': (context) => MyTabs()
+      }));
 }
 
 class MyTabs extends StatefulWidget {
@@ -52,14 +59,17 @@ class MyTabsState extends State<MyTabs> with SingleTickerProviderStateMixin {
   final FirebaseMessaging _fcm = FirebaseMessaging();
   TabController controller;
   Map group = {'name': 'Loading'};
-
+  String _projectVersion = '';
   @override
   void initState() {
     super.initState();
+    initPlatformState();
     controller = new TabController(vsync: this, length: 2);
     SharedPreferences.getInstance().then((prefs) {
       setState(() {
-        group = json.decode(prefs.get('group'));
+        if (prefs.get('group') != null)
+          group = json.decode(prefs.get('group'));
+        else group = json.decode(prefs.get('teacher'));
       });
     });
     _fcm.configure(
@@ -92,6 +102,19 @@ class MyTabsState extends State<MyTabs> with SingleTickerProviderStateMixin {
     );
   }
 
+  initPlatformState() async {
+    String projectVersion;
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    try {
+      projectVersion = await GetVersion.projectVersion;
+    } on PlatformException {
+      projectVersion = 'Failed to get project version.';
+    }
+    setState(() {
+      _projectVersion = projectVersion;
+    });
+  }
+
   @override
   void dispose() {
     controller.dispose();
@@ -118,9 +141,10 @@ class MyTabsState extends State<MyTabs> with SingleTickerProviderStateMixin {
     return new Scaffold(
         drawer: new Drawer(
           child: ListView(
+            padding: EdgeInsets.zero,
             children: <Widget>[
               new UserAccountsDrawerHeader(
-                  accountName: new Text(group['name']),
+                  accountName: group['name'] != null ? new Text(group['name']) : new Text(group['full_name']),
                   currentAccountPicture: new GestureDetector(
                       child: new CircleAvatar(
                     backgroundImage: new AssetImage('assets/images/logo.png'),
@@ -129,7 +153,7 @@ class MyTabsState extends State<MyTabs> with SingleTickerProviderStateMixin {
                   accountEmail: new Text('СибГУ им. Решетнева'),
                   decoration: new BoxDecoration(
                       image: new DecorationImage(
-                          image: new AssetImage('assets/images/background.png'),
+                          image: new AssetImage('assets/images/bg.png'),
                           fit: BoxFit.cover))),
               ListTile(
                 title: Text("Мероприятия"),
@@ -138,6 +162,15 @@ class MyTabsState extends State<MyTabs> with SingleTickerProviderStateMixin {
                   Navigator.of(context).pop();
                   Navigator.of(context).push(new MaterialPageRoute(
                       builder: (BuildContext context) => new EventsPage()));
+                },
+              ),
+              ListTile(
+                title: Text("Карта корпусов"),
+                trailing: Icon(Icons.arrow_forward),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).push(new MaterialPageRoute(
+                      builder: (BuildContext context) => new MapsPage()));
                 },
               ),
               ListTile(
@@ -150,19 +183,13 @@ class MyTabsState extends State<MyTabs> with SingleTickerProviderStateMixin {
                 },
               ),
               ListTile(
-                title: Text("Карта кампуса"),
-                trailing: Icon(Icons.arrow_forward),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  Navigator.of(context).push(new MaterialPageRoute(
-                      builder: (BuildContext context) => new MapsPage()));
-                },
+                title: Text("Версия приложения $_projectVersion")
               ),
             ],
           ),
         ),
         appBar: new AppBar(
-          title: new Text("Расписание ${group['name']}"),
+          title: group['name'] != null ? new Text("Расписание ${group['name']}") : new Text("${group['full_name']}"),
           elevation: 0.0,
           backgroundColor: Color(0xFF006CB5),
           actions: <Widget>[
@@ -205,7 +232,6 @@ class MyTabsState extends State<MyTabs> with SingleTickerProviderStateMixin {
 
 class Choice {
   const Choice({this.title, this.icon});
-
   final String title;
   final IconData icon;
 }
