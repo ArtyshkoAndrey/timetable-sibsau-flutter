@@ -146,7 +146,6 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     _ac = AppConfig(context);
-    bool notNull(Object o) => o != null;
     final groupField = Container(
       margin: EdgeInsets.only(top: 20),
         padding: EdgeInsets.symmetric(horizontal: 3),
