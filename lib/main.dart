@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mdi/mdi.dart';
 import 'package:timetable/TimetablePage.dart';
-import 'package:timetable/NewsPage.dart';
+//import 'package:timetable/NewsPage.dart';
 import 'package:timetable/LoginPage.dart';
 import 'package:timetable/CheckAuth.dart';
 import 'dart:convert';
@@ -17,6 +17,7 @@ import 'package:flutter/services.dart';
 import 'package:get_version/get_version.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   FirebaseAnalytics analytics = FirebaseAnalytics();
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   var notified;
@@ -28,7 +29,6 @@ void main() {
     }
     return false;
   }
-
   _requestPermission(PermissionGroup.location);
   SharedPreferences.getInstance().then((prefs) {
     notified = prefs.getBool('notifications');
@@ -64,7 +64,7 @@ class MyTabsState extends State<MyTabs> with SingleTickerProviderStateMixin {
   void initState() {
     super.initState();
     initPlatformState();
-    controller = new TabController(vsync: this, length: 2);
+    controller = new TabController(vsync: this, length: 1);
     SharedPreferences.getInstance().then((prefs) {
       setState(() {
         if (prefs.get('group') != null)
@@ -217,15 +217,15 @@ class MyTabsState extends State<MyTabs> with SingleTickerProviderStateMixin {
                     unselectedLabelColor: Colors.lightBlue[100],
                     labelPadding: EdgeInsets.zero,
                     tabs: <Tab>[
-                      new Tab(icon: new Icon(Icons.date_range)),
-                      new Tab(icon: new Icon(Mdi.newspaper))
+                      new Tab(icon: new Icon(Icons.date_range))
+//                      new Tab(icon: new Icon(Mdi.newspaper))
                     ]))),
         body: new TabBarView(
             physics: const NeverScrollableScrollPhysics(),
             controller: controller,
             children: <Widget>[
-              new TimetablePage(group: group),
-              new NewsPage(),
+              new TimetablePage(group: group)
+//              new NewsPage(),
             ]));
   }
 }

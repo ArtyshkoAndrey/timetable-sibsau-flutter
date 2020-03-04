@@ -66,8 +66,8 @@ class _DetailsPageState extends State<DetailsPage> {
               background: Image(
                   image: AdvancedNetworkImage(
                     (widget.news.img != null)
-                        ? 'https://timetable.artyshko.ru/public/uploads${widget.news.img}'
-                        : 'https://timetable.artyshko.ru/uploads/images/7fad611613fc12bd1a3ccd1b91e9250a.jpg?_t=1567420295',
+                        ? 'http://95.188.80.41/public/uploads${widget.news.img}'
+                        : 'http://95.188.80.41/uploads/images/7fad611613fc12bd1a3ccd1b91e9250a.jpg?_t=1567420295',
                     useDiskCache: true,
                     cacheRule: CacheRule(maxAge: const Duration(days: 7)),
                   ),
